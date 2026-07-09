@@ -14,10 +14,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;background:var(--bg,#0C120D)}
 :root{--nav-w:236px;--radius:22px}
 html,body{height:100%;height:100dvh}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg,#0C0F1A);color:var(--text,#EAF0FF);overflow:hidden;transition:background .35s}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg,#0C120D);color:var(--text,#EAF0FF);overflow:hidden;transition:background .35s;position:fixed;inset:0;width:100%;height:100%;height:100dvh}
 body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
   background:radial-gradient(600px 420px at 12% 8%,color-mix(in srgb,var(--teal,#6BA5FF) 16%,transparent),transparent 70%),
              radial-gradient(700px 520px at 88% 92%,color-mix(in srgb,var(--blue,#6BA5FF) 12%,transparent),transparent 70%);}
@@ -1645,8 +1645,12 @@ var LifeOS=(function(){
     if(!weather){ el.style.display='none'; return; }
     var wd=wDesc(weather.code), ico=weather.day?wd[1]:wd[2];
     el.style.display='flex';
+    el.style.cursor='pointer';
+    el.title='Zum Wetter-Tab';
     el.innerHTML='<span class="wico">'+ico+'</span><div><div class="wtmp">'+weather.temp+'°</div></div>'
-      +'<div class="wmeta">'+wd[0]+(weather.place?' · '+esc(weather.place):'')+'<br>H: '+weather.max+'°  T: '+weather.min+'°  ·  gefühlt '+weather.feels+'°</div>';
+      +'<div class="wmeta">'+wd[0]+(weather.place?' · '+esc(weather.place):'')+'<br>H: '+weather.max+'°  T: '+weather.min+'°  ·  gefühlt '+weather.feels+'°</div>'
+      +'<span style="margin-left:auto;align-self:center;opacity:.55;font-size:18px">›</span>';
+    el.onclick=function(){ go('wetter'); };
   }
 
   /* ------------------------------ Wetter-Tab ------------------------------- */
@@ -1893,8 +1897,9 @@ var LifeOS=(function(){
     var chips=[{t:'📅 '+evN+(evN===1?' Termin':' Termine'),go:'kalender'},{t:'✅ '+tDue+' fällig',go:'aufgaben'}];
     if(tp!==null) chips.push({t:'📚 Lernstand '+tp+' %',go:'edu'});
     renderWeather();
-    if(weather) chips.push({t:(weather.day?wDesc(weather.code)[1]:wDesc(weather.code)[2])+' '+weather.temp+'°',go:'wetter'});
-    else chips.push({t:weatherFailed?'🌤️ Wetter n. verfügbar':'🌤️ Wetter lädt …',go:'wetter'});
+    /* Wetter-Chip entfällt – die große Wetterzeile (#hweather) ist selbst anklickbar.
+       Nur wenn (noch) keine Wetterdaten da sind, zeigen wir einen kleinen Hinweis-Chip. */
+    if(!weather) chips.push({t:weatherFailed?'🌤️ Wetter n. verfügbar':'🌤️ Wetter lädt …',go:'wetter'});
     document.getElementById('hchips').innerHTML=chips.map(function(c){ return '<span class="hchip"'+(c.go?' data-hg="'+c.go+'"':' style="opacity:.65;cursor:default"')+'>'+c.t+'</span>'; }).join('');
     document.querySelectorAll('#hchips [data-hg]').forEach(function(el){ el.onclick=function(){ go(el.getAttribute('data-hg')); }; });
     renderDist();
