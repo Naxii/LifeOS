@@ -160,9 +160,13 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .mhead b{font-family:'Space Grotesk';font-size:17px}
 .fg{margin-bottom:13px}
 .fg label{display:block;font:600 12px 'Inter';color:var(--text2);margin-bottom:6px}
-.fg input,.fg select,.fg textarea{width:100%;padding:12px 13px;border-radius:13px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1F2640);color:var(--text);font:500 14px 'Inter';outline:none}
+.fg input,.fg select,.fg textarea{width:100%;max-width:100%;box-sizing:border-box;padding:12px 13px;border-radius:13px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1F2640);color:var(--text);font:500 14px 'Inter';outline:none;-webkit-appearance:none;appearance:none}
+.fg select{-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23888" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>');background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.fg input[type=date]{min-width:0}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal,#6BA5FF)}
-.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start}
+.fg2>.fg{min-width:0;margin-bottom:0}
+.fg2>.fg:last-child{margin-bottom:13px}
 .mfoot{display:flex;gap:10px;margin-top:18px}
 .mbtn{flex:1;padding:13px;border-radius:15px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1F2640);color:var(--text);font:600 14px 'Inter';cursor:pointer}
 .mbtn.pri{background:linear-gradient(135deg,var(--teal,#6BA5FF),var(--blue,#4472d8));border:0;color:#fff}
@@ -925,7 +929,7 @@ var LifeOS=(function(){
       +'<button class="addfab" id="cadd">'+ICONS.plus+'Termin</button></div>';
     h+='<div class="chiprow"><button class="fchip'+(calCat==='all'?' on':'')+'" data-cc="all">Alle</button>'
       +Object.keys(EV_CATS).map(function(k){ return '<button class="fchip'+(calCat===k?' on':'')+'" data-cc="'+k+'"><span class="agdot" style="display:inline-block;background:'+EV_CATS[k].c+';margin-right:6px;vertical-align:-1px"></span>'+EV_CATS[k].n+'</button>'; }).join('')
-      +'<input class="sinput" id="csearch" placeholder="Suchen …" style="max-width:200px;padding:8px 13px;margin-left:auto" value="'+esc(calSearch)+'"></div>';
+      +'<input class="sinput" id="csearch" placeholder="Suchen …" style="flex-basis:100%;max-width:260px;padding:8px 13px;margin-top:2px" value="'+esc(calSearch)+'"></div>';
 
     if(calView==='monat'){
       var first=new Date(y,m,1), start=(first.getDay()+6)%7, days=new Date(y,m+1,0).getDate(), prevDays=new Date(y,m,0).getDate();
@@ -1027,7 +1031,7 @@ var LifeOS=(function(){
     var h='<div class="calbar"><div class="mon">Aufgaben</div><div class="nspacer" style="flex:1"></div><button class="addfab" id="tadd">'+ICONS.plus+'Aufgabe</button></div>';
     h+='<div class="card" style="margin-bottom:14px"><div class="kv" style="border:0;padding:0 0 4px"><span class="k">'+done+' von '+all.length+' erledigt</span><span class="v">'+pct+' %</span></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>';
     h+='<div class="chiprow">'+['offen','alle','erledigt'].map(function(f){ return '<button class="fchip'+(tFilter===f?' on':'')+'" data-tf="'+f+'">'+f.charAt(0).toUpperCase()+f.slice(1)+'</button>'; }).join('')
-      +'<input class="sinput" id="tsearch" placeholder="Suchen …" style="max-width:200px;padding:8px 13px;margin-left:auto" value="'+esc(tSearch)+'"></div>';
+      +'<input class="sinput" id="tsearch" placeholder="Suchen …" style="flex-basis:100%;max-width:260px;padding:8px 13px;margin-top:2px" value="'+esc(tSearch)+'"></div>';
     var list=tasksSorted().filter(function(t){
       if(tFilter==='offen'&&t.done) return false;
       if(tFilter==='erledigt'&&!t.done) return false;
@@ -1045,6 +1049,7 @@ var LifeOS=(function(){
         +'<span class="pdot" style="background:'+(PRIOS[t.prio||2].c)+'"></span><span class="tbadge">'+PRIOS[t.prio||2].n+'</span>'
         +(t.cat?'<span class="tbadge">'+esc(t.cat)+'</span>':'')
         +(t.due?'<span class="tbadge'+(late?' late':'')+'">'+(late?'Überfällig · ':'Fällig ')+dShort(t.due)+'</span>':'')
+        +(t.rep?'<span class="tbadge">↻ '+(t.rep===1?'täglich':t.rep===7?'wöchentlich':'alle '+t.rep+' Tage')+'</span>':'')
         +(st?'<span class="tbadge">'+sd+'/'+st+' Teilschritte</span>':'')
         +'</div>'
         +'<div class="tsubs">'+(t.subs||[]).map(function(sx,si){
@@ -1072,19 +1077,31 @@ var LifeOS=(function(){
     w.querySelectorAll('[data-sb]').forEach(function(el){ el.onclick=function(){ addSub(el.getAttribute('data-sb')); }; });
     w.querySelectorAll('[data-sa]').forEach(function(el){ el.onkeydown=function(ev){ if(ev.key==='Enter') addSub(el.getAttribute('data-sa')); }; });
   }
+  function addDaysISO(iso,n){ var d=new Date((iso||todayStr())+'T00:00'); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   function toggleTask(id){
     var t=(master.lifeos.tasks||[]).filter(function(x){return x.id===id})[0]; if(!t) return;
+    /* Wiederkehrende Aufgabe: beim Abhaken nicht erledigen, sondern auf nächsten Termin weiterrollen */
+    if(!t.done && t.rep && t.rep>0){
+      var base = (t.due && t.due>=todayStr()) ? t.due : todayStr();
+      t.due = addDaysISO(base, t.rep);
+      (t.subs||[]).forEach(function(sx){ sx.done=false; });
+      persist(); renderTasks(); renderDash();
+      return;
+    }
     t.done=!t.done; persist(); renderTasks(); renderDash();
   }
   function taskModal(t){
+    var repOpts=[[0,'Keine'],[1,'Täglich'],[2,'Alle 2 Tage'],[3,'Alle 3 Tage'],[4,'Alle 4 Tage'],[5,'Alle 5 Tage'],[6,'Alle 6 Tage'],[7,'Alle 7 Tage (wöchentlich)']];
     var b='<div class="fg"><label>Titel</label><input id="tk-t" maxlength="80" placeholder="z. B. Berichtsheft schreiben" value="'+esc(t?t.title:'')+'"></div>'
       +'<div class="fg2"><div class="fg"><label>Fällig am (optional)</label><input id="tk-d" type="date" value="'+(t&&t.due?t.due:'')+'"></div>'
       +'<div class="fg"><label>Priorität</label><select id="tk-p">'+[1,2,3].map(function(p){return '<option value="'+p+'"'+((t?t.prio:2)===p?' selected':'')+'>'+PRIOS[p].n+'</option>'}).join('')+'</select></div></div>'
-      +'<div class="fg"><label>Kategorie (optional)</label><input id="tk-c" maxlength="24" placeholder="z. B. Ausbildung, Zuhause" value="'+esc(t&&t.cat?t.cat:'')+'"></div>'
-      +'<div class="note">Aufgaben mit Fälligkeitsdatum erscheinen automatisch im Kalender und im Dashboard.</div>';
+      +'<div class="fg2"><div class="fg"><label>Wiederholung</label><select id="tk-r">'+repOpts.map(function(o){return '<option value="'+o[0]+'"'+((t&&t.rep?t.rep:0)===o[0]?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select></div>'
+      +'<div class="fg"><label>Kategorie (optional)</label><input id="tk-c" maxlength="24" placeholder="z. B. Ausbildung" value="'+esc(t&&t.cat?t.cat:'')+'"></div></div>'
+      +'<div class="note">Aufgaben mit Fälligkeitsdatum erscheinen automatisch im Kalender und im Dashboard. Wiederkehrende Aufgaben springen beim Abhaken automatisch auf den nächsten Termin.</div>';
     var btns=[{label:'Abbrechen'},{label:t?'Speichern':'Anlegen',cls:'pri',fn:function(){
       var ti=document.getElementById('tk-t').value.trim(); if(!ti) return false;
-      var o={id:t?t.id:Date.now(),title:ti,due:document.getElementById('tk-d').value,prio:+document.getElementById('tk-p').value,cat:document.getElementById('tk-c').value.trim(),done:t?t.done:false,subs:t?(t.subs||[]):[]};
+      var rep=+document.getElementById('tk-r').value||0;
+      var o={id:t?t.id:Date.now(),title:ti,due:document.getElementById('tk-d').value,prio:+document.getElementById('tk-p').value,cat:document.getElementById('tk-c').value.trim(),rep:rep,done:t?t.done:false,subs:t?(t.subs||[]):[]};
       if(t){ var i=master.lifeos.tasks.findIndex(function(x){return x.id===t.id}); if(i>=0)master.lifeos.tasks[i]=o; }
       else master.lifeos.tasks.push(o);
       persist(); renderTasks(); renderDash();
