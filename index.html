@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Naxii LifeOS</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LifeOS">
+<meta name="theme-color" content="#0C120D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -11,12 +16,12 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 html{-webkit-text-size-adjust:100%}
 :root{--nav-w:236px;--radius:22px}
-html,body{height:100%}
+html,body{height:100%;height:100dvh}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg,#0C0F1A);color:var(--text,#EAF0FF);overflow:hidden;transition:background .35s}
 body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
   background:radial-gradient(600px 420px at 12% 8%,color-mix(in srgb,var(--teal,#6BA5FF) 16%,transparent),transparent 70%),
              radial-gradient(700px 520px at 88% 92%,color-mix(in srgb,var(--blue,#6BA5FF) 12%,transparent),transparent 70%);}
-#os{position:relative;z-index:1;display:flex;height:100%}
+#os{position:relative;z-index:1;display:flex;height:100%;height:100dvh;padding-top:env(safe-area-inset-top,0px);box-sizing:border-box}
 /* ---------- Navigation (Desktop-Rail) ---------- */
 #rail{width:var(--nav-w);flex-shrink:0;padding:18px 14px;display:flex;flex-direction:column;gap:6px;
   background:color-mix(in srgb,var(--surface,#161B2E) 62%,transparent);
@@ -265,6 +270,14 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 #hweather .wico{font-size:32px;line-height:1}
 #hweather .wtmp{font-family:'Space Grotesk';font-weight:700;font-size:24px}
 #hweather .wmeta{font-size:12px;opacity:.82;line-height:1.4}
+.hdist{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:8px 13px;border-radius:99px;
+  background:rgba(255,255,255,.14);border:0.5px solid rgba(255,255,255,.22);backdrop-filter:blur(8px);cursor:pointer;transition:background .2s}
+.hdist:hover{background:rgba(255,255,255,.22)}
+.hdist .hb{color:#FF7A9C;font-size:15px;line-height:1;animation:hbeat 2.2s ease-in-out infinite}
+@keyframes hbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.18)}24%{transform:scale(1)}36%{transform:scale(1.12)}}
+.hdist .hkm{font-family:'Space Grotesk';font-weight:700;font-size:15px}
+.hdist .hlbl{font-size:12px;opacity:.85}
+@media(prefers-reduced-motion:reduce){.hdist .hb{animation:none}}
 .hchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .hchip{font:600 12px 'Inter';padding:7px 12px;border-radius:99px;background:rgba(255,255,255,.14);border:0.5px solid rgba(255,255,255,.22);backdrop-filter:blur(8px);cursor:pointer;transition:background .2s}
 .hchip:hover{background:rgba(255,255,255,.24)}
@@ -344,7 +357,7 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 @media(max-width:860px){
   :root{--nav-w:64px}
   /* Schmale Icon-Seitenleiste: gleiches Design wie am PC, nur kompakt */
-  #rail{width:64px;padding:14px 8px;gap:4px}
+  #rail{width:calc(64px + env(safe-area-inset-left,0px));padding:14px 8px 14px calc(8px + env(safe-area-inset-left,0px));gap:4px}
   #brand{justify-content:center;padding:4px 0 14px}
   #brand .mono{width:36px;height:36px;font-size:15px}
   #brand>div:last-child{display:none}
@@ -353,11 +366,11 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
   .nitem svg{width:21px;height:21px}
   #railclock,#raildate{display:none}
   #dock{display:none!important}
-  .view{padding:14px 12px 44px}
+  .view{padding:14px calc(12px + env(safe-area-inset-right,0px)) calc(44px + env(safe-area-inset-bottom,0px)) 12px}
   .view.frame{padding:0}
   .frame-wrap{padding:8px}
   .frame-card{max-width:none;border-radius:18px}
-  #wartwrap{padding:14px 12px 44px}
+  #wartwrap{padding:14px calc(12px + env(safe-area-inset-right,0px)) calc(44px + env(safe-area-inset-bottom,0px)) 12px}
   .grid{grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:11px}
   .card{padding:14px;border-radius:18px}
   #hero{min-height:0}
@@ -423,6 +436,7 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
             <div class="sub" id="greetsub"></div>
             <div class="hsum" id="hsum"></div>
             <div id="hweather" style="display:none"></div>
+            <div id="hdist-wrap"></div>
             <div class="hchips" id="hchips"></div>
             <div class="hclock" id="hclock">--:--</div>
           </div>
@@ -499,6 +513,16 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
           <div class="note">Für den Feierabend-Countdown im Hero-Dashboard.</div>
         </div>
         <div class="card">
+          <div class="ttl">Entfernung zur Partnerin</div>
+          <input class="sinput" id="set-partner-name" placeholder="Name (optional, z. B. Anna-Lena)" maxlength="30" style="margin-bottom:9px">
+          <div style="display:flex;gap:8px">
+            <input class="sinput" id="set-partner" placeholder="Ort oder Adresse (z. B. Lollar)" maxlength="80">
+            <button class="qbtn" id="set-partner-go" style="flex:0 0 auto;min-width:96px">Suchen</button>
+          </div>
+          <div class="note" id="set-partner-status">Hinterlege ihren Wohnort. Das Dashboard zeigt dann live, wie weit dein aktueller Standort (Luftlinie) entfernt ist – mit kleinem Herz im Hero.</div>
+          <div class="srow" id="set-partner-clear-row" style="display:none"><button class="qbtn" id="set-partner-clear">Entfernen</button></div>
+        </div>
+        <div class="card">
           <div class="ttl">Daten &amp; Backup</div>
           <div class="srow">
             <button class="qbtn" onclick="LifeOS.exportBackup()">Backup exportieren</button>
@@ -561,7 +585,7 @@ var ICONS={
 };
 
 var LifeOS=(function(){
-  var master={finanz:{},sprit:{},lifeos:{theme:'lifeos',name:'',notes:'',links:{},events:[],tasks:[],feierabend:'17:00'}};
+  var master={finanz:{},sprit:{},lifeos:{theme:'lifeos',name:'',notes:'',links:{},events:[],tasks:[],feierabend:'17:00',partner:null}};
   var saveT=null, storeMode='memory', clockT=null;
 
   /* -------- Persistenz-Adapter: window.storage -> localStorage -> Memory --- */
@@ -893,6 +917,36 @@ var LifeOS=(function(){
       sendTo('finanz',{lifeos:'setname',value:i.value.trim()}); if(current==='dashboard')renderDash(); };
     var fai=document.getElementById('setfa'); fai.value=master.lifeos.feierabend||'17:00';
     fai.onchange=function(){ master.lifeos.feierabend=fai.value||'17:00'; persist(); updateHero(); if(current==='dashboard')heroData(); };
+    /* --- Entfernung zur Partnerin --- */
+    var pName=document.getElementById('set-partner-name'), pAddr=document.getElementById('set-partner'),
+        pGo=document.getElementById('set-partner-go'), pStatus=document.getElementById('set-partner-status'),
+        pClearRow=document.getElementById('set-partner-clear-row'), pClear=document.getElementById('set-partner-clear');
+    var pt=master.lifeos.partner;
+    if(pt){ pName.value=pt.name||''; pAddr.value=pt.place||''; pClearRow.style.display='flex';
+      pStatus.innerHTML='✅ Gespeichert: <b>'+esc(pt.place||'')+'</b>'+(pt.lat!=null?' ('+(+pt.lat).toFixed(3)+', '+(+pt.lon).toFixed(3)+')':''); }
+    pName.oninput=function(){ if(master.lifeos.partner){ master.lifeos.partner.name=pName.value.trim(); persist(); if(current==='dashboard')renderDist(); } };
+    async function geocode(){
+      var q=pAddr.value.trim(); if(!q){ pStatus.textContent='Bitte einen Ort oder eine Adresse eingeben.'; return; }
+      pStatus.textContent='Suche „'+q+'“ …';
+      try{
+        var u='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=1&language=de&format=json';
+        var d=await (await fetch(u)).json();
+        if(!d.results||!d.results.length){ pStatus.textContent='Kein Ort gefunden. Versuch es mit Stadt + Land (z. B. „Lollar, Deutschland“).'; return; }
+        var r=d.results[0];
+        var label=r.name+(r.admin1?', '+r.admin1:'')+(r.country?', '+r.country:'');
+        master.lifeos.partner={name:pName.value.trim(),place:label,lat:r.latitude,lon:r.longitude};
+        persist();
+        pStatus.innerHTML='✅ Gespeichert: <b>'+esc(label)+'</b> ('+r.latitude.toFixed(3)+', '+r.longitude.toFixed(3)+')';
+        pClearRow.style.display='flex';
+        myPos=null; myPosTried=false; /* Standort neu ermitteln für frische Distanz */
+        if(current==='dashboard') renderDist();
+      }catch(e){ pStatus.textContent='Suche fehlgeschlagen. In der Vorschau ist der Zugriff evtl. blockiert – auf deiner Domain (Vercel) klappt es.'; }
+    }
+    pGo.onclick=geocode;
+    pAddr.onkeydown=function(ev){ if(ev.key==='Enter') geocode(); };
+    pClear.onclick=function(){ master.lifeos.partner=null; persist(); pName.value=''; pAddr.value='';
+      pClearRow.style.display='none'; pStatus.textContent='Entfernt. Hinterlege einen neuen Ort, um die Anzeige wieder einzublenden.';
+      if(current==='dashboard') renderDist(); };
     document.getElementById('impfile').onchange=function(ev){
       var f=ev.target.files[0]; if(!f)return;
       var r=new FileReader();
@@ -1767,6 +1821,49 @@ var LifeOS=(function(){
     document.getElementById('tlfill').style.width=(p*100)+'%';
     document.getElementById('tlnow').style.left=(p*100)+'%';
   }
+
+  /* --------------------- Entfernung zur Partnerin --------------------------- */
+  var myPos=null, myPosTried=false;
+  function haversine(a,b,c,d){
+    var R=6371, dLat=(c-a)*Math.PI/180, dLon=(d-b)*Math.PI/180;
+    var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+  }
+  function fmtDist(km){
+    if(km<1) return Math.round(km*1000)+' m';
+    if(km<10) return km.toFixed(1).replace('.',',')+' km';
+    return Math.round(km)+' km';
+  }
+  function locateMe(cb){
+    /* Wetter kennt evtl. schon Koordinaten -> als Fallback nutzen */
+    if(weather&&weather.lat&&weather.lon){ myPos={lat:+weather.lat,lon:+weather.lon}; }
+    if(!navigator.geolocation){ cb&&cb(); return; }
+    navigator.geolocation.getCurrentPosition(
+      function(p){ myPos={lat:p.coords.latitude,lon:p.coords.longitude}; cb&&cb(); },
+      function(){ cb&&cb(); }, {timeout:6000,maximumAge:300000});
+  }
+  function renderDist(){
+    var wrap=document.getElementById('hdist-wrap'); if(!wrap) return;
+    var pt=master.lifeos.partner;
+    if(!pt||pt.lat==null){ wrap.innerHTML=''; return; }
+    if(!myPos){
+      wrap.innerHTML='<div class="hdist" data-dedit="1"><span class="hb">♥</span><span class="hlbl">Entfernung wird ermittelt …</span></div>';
+      bindDist();
+      if(!myPosTried){ myPosTried=true; locateMe(function(){ if(current==='dashboard') renderDist(); }); }
+      return;
+    }
+    var km=haversine(myPos.lat,myPos.lon,pt.lat,pt.lon);
+    var name=pt.name?esc(pt.name):'';
+    wrap.innerHTML='<div class="hdist" data-dedit="1" title="In den Einstellungen anpassbar">'
+      +'<span class="hb">♥</span><span class="hkm">'+fmtDist(km)+'</span>'
+      +'<span class="hlbl">'+(km<0.15?'ihr seid zusammen 🥰':'bis '+(name||pt.place||'zu ihr'))+'</span></div>';
+    bindDist();
+  }
+  function bindDist(){
+    var el=document.querySelector('#hdist-wrap .hdist');
+    if(el) el.onclick=function(){ go('settings'); setTimeout(function(){ var i=document.getElementById('set-partner'); if(i){ i.scrollIntoView({behavior:'smooth',block:'center'}); i.focus(); } },120); };
+  }
+
   function heroData(){
     var hs=document.getElementById('hsum'); if(!hs) return;
     var n=new Date(), td=todayStr(), nowMin=n.getHours()*60+n.getMinutes();
@@ -1787,6 +1884,7 @@ var LifeOS=(function(){
     else chips.push({t:weatherFailed?'🌤️ Wetter n. verfügbar':'🌤️ Wetter lädt …',go:'wetter'});
     document.getElementById('hchips').innerHTML=chips.map(function(c){ return '<span class="hchip"'+(c.go?' data-hg="'+c.go+'"':' style="opacity:.65;cursor:default"')+'>'+c.t+'</span>'; }).join('');
     document.querySelectorAll('#hchips [data-hg]').forEach(function(el){ el.onclick=function(){ go(el.getAttribute('data-hg')); }; });
+    renderDist();
     /* Timeline */
     var items=evT.map(function(e){ return {time:e.time||'',t:e.title,go:'kalender'}; })
       .concat(exT.map(function(x){ return {time:'',t:x.t,go:x.go}; }));
@@ -1845,7 +1943,7 @@ var LifeOS=(function(){
   async function boot(){
     var loaded=await loadMaster();
     if(loaded){ master.finanz=loaded.finanz||{}; master.sprit=loaded.sprit||{};
-      master.lifeos=Object.assign({theme:'lifeos',name:'',notes:'',links:{},events:[],tasks:[],feierabend:'17:00'},loaded.lifeos||{}); }
+      master.lifeos=Object.assign({theme:'lifeos',name:'',notes:'',links:{},events:[],tasks:[],feierabend:'17:00',partner:null},loaded.lifeos||{}); }
     ensureMods();
     applyTheme(master.lifeos.theme||'lifeos');
     buildNav(); renderMods(); bindSettings(); mountModules();
