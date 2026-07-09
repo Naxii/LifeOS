@@ -132,6 +132,18 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .wx-day .dt .mx{font-weight:600}.wx-day .dt .mn{color:var(--text3)}
 .wx-radar-wrap{position:relative;border-radius:16px;overflow:hidden;height:340px;background:var(--surf2,#1E2A1F);border:0.5px solid var(--border,rgba(255,255,255,.07))}
 .wx-radar-wrap iframe{width:100%;height:100%;border:0;display:block}
+#wx-radar-map{width:100%;height:100%}
+.wx-radar-bar{display:flex;align-items:center;gap:10px;margin-top:10px}
+.wx-radar-play{width:38px;height:38px;flex-shrink:0;border-radius:12px;border:0;cursor:pointer;color:#062012;
+  background:var(--teal,#8FD25C);display:grid;place-items:center;font-size:15px}
+.wx-radar-track{flex:1;position:relative}
+.wx-radar-range{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:99px;background:var(--surf2,#1E2A1F);outline:none}
+.wx-radar-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--teal,#8FD25C);cursor:pointer;border:2px solid var(--surface,#161F17)}
+.wx-radar-range::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--teal,#8FD25C);cursor:pointer;border:2px solid var(--surface,#161F17)}
+.wx-radar-time{font-family:'Space Grotesk';font-weight:600;font-size:13px;min-width:92px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.wx-radar-time .fut{color:var(--teal,#8FD25C)}
+.wx-radar-time .past{color:var(--text2)}
+.leaflet-container{background:#0b140d}
 .wx-radar-note{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5}
 .wx-empty{text-align:center;padding:40px 20px;color:var(--text3)}
 .wx-empty .bico{font-size:44px;margin-bottom:12px}
@@ -1637,17 +1649,83 @@ var LifeOS=(function(){
         +'<div class="dt"><span class="mn">'+mn+'°</span> <span class="mx">'+mx+'°</span></div></div>';
     }
     h+='<div class="wx-card"><div class="h">7-Tage-Vorhersage</div>'+dd+'</div>';
-    /* Regenradar (RainViewer, kostenlos, kein Key) */
+    /* Regenradar (RainViewer, kostenlos, kein Key) – mit Zukunfts-Frames (nowcast) */
     if(weather.lat && weather.lon){
-      var z=8, la=weather.lat, lo=weather.lon;
-      var radarUrl='https://www.rainviewer.com/map.html?loc='+la+','+lo+','+z
-        +'&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=1&c=3&o=83&lm=1&layer=radar&sm=1&sn=1';
-      h+='<div class="wx-card"><div class="h">Regenradar</div>'
-        +'<div class="wx-radar-wrap"><iframe src="'+radarUrl+'" title="Regenradar" loading="lazy" referrerpolicy="no-referrer"></iframe></div>'
-        +'<div class="wx-radar-note">Live-Niederschlagsradar von RainViewer, zentriert auf deinen Standort. Bewegt sich animiert über die letzten Stunden.</div></div>';
+      h+='<div class="wx-card"><div class="h">Regenradar · inkl. Vorhersage</div>'
+        +'<div class="wx-radar-wrap"><div id="wx-radar-map"></div></div>'
+        +'<div class="wx-radar-bar"><button class="wx-radar-play" id="wx-radar-play" aria-label="Abspielen">❚❚</button>'
+        +'<div class="wx-radar-track"><input type="range" class="wx-radar-range" id="wx-radar-range" min="0" max="0" value="0"></div>'
+        +'<div class="wx-radar-time" id="wx-radar-time">–</div></div>'
+        +'<div class="wx-radar-note">Live-Niederschlagsradar von RainViewer. Die Zeitleiste läuft von den letzten ~2 Stunden bis etwa 30 Minuten in die <b>Zukunft</b> (Vorhersage grün). Zum Scrubben den Regler ziehen.</div></div>';
     }
     w.innerHTML=h;
+    if(weather.lat && weather.lon) initRadar(+weather.lat, +weather.lon);
   }
+
+  /* --------------------------- Regenradar-Engine --------------------------- */
+  var radarState={frames:[],idx:0,timer:null,layers:{},map:null,host:'',playing:true};
+  function loadScript(src){ return new Promise(function(res,rej){ var sc=document.createElement('script'); sc.src=src; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); }); }
+  function loadCss(href){ if(document.querySelector('link[href="'+href+'"]'))return; var l=document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); }
+  async function initRadar(lat,lon){
+    try{
+      loadCss('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css');
+      if(!window.L) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js');
+      var meta=await (await fetch('https://api.rainviewer.com/public/weather-maps.json')).json();
+      radarState.host=meta.host;
+      var past=(meta.radar&&meta.radar.past)||[];
+      var now=(meta.radar&&meta.radar.nowcast)||[];
+      var frames=past.slice(-10).concat(now); /* letzte ~2 h + Zukunft */
+      if(!frames.length) throw new Error('keine Frames');
+      radarState.frames=frames;
+      var mapEl=document.getElementById('wx-radar-map'); if(!mapEl) return;
+      if(radarState.map){ try{radarState.map.remove();}catch(e){} radarState.map=null; radarState.layers={}; }
+      var map=L.map(mapEl,{zoomControl:true,attributionControl:false,dragging:true,scrollWheelZoom:false}).setView([lat,lon],8);
+      radarState.map=map;
+      L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',{maxZoom:12,opacity:.85}).addTo(map);
+      L.circleMarker([lat,lon],{radius:5,color:'#8FD25C',weight:2,fillColor:'#8FD25C',fillOpacity:.9}).addTo(map);
+      var rangeEl=document.getElementById('wx-radar-range');
+      rangeEl.max=String(frames.length-1);
+      /* Startindex = letzter Vergangenheits-Frame (also "jetzt") */
+      var nowStart=Math.max(0, past.slice(-10).length-1);
+      radarState.idx=nowStart; rangeEl.value=String(nowStart);
+      rangeEl.oninput=function(){ radarState.playing=false; setPlayIcon(); showFrame(+rangeEl.value); };
+      document.getElementById('wx-radar-play').onclick=function(){ radarState.playing=!radarState.playing; setPlayIcon(); if(radarState.playing) playLoop(); };
+      showFrame(nowStart);
+      radarState.playing=true; setPlayIcon(); playLoop();
+    }catch(e){
+      var mp=document.getElementById('wx-radar-map');
+      if(mp) mp.innerHTML='<div style="height:100%;display:grid;place-items:center;text-align:center;color:var(--text3);font-size:12px;padding:20px">Radar konnte nicht geladen werden.<br>In der Vorschau ist der Zugriff blockiert – auf deiner Domain (Vercel) läuft es.</div>';
+    }
+  }
+  function frameLayer(fr){
+    if(radarState.layers[fr.path]) return radarState.layers[fr.path];
+    var url=radarState.host+fr.path+'/256/{z}/{x}/{y}/2/1_1.png';
+    var lyr=L.tileLayer(url,{opacity:0,maxZoom:12,tileSize:256});
+    lyr.addTo(radarState.map); radarState.layers[fr.path]=lyr; return lyr;
+  }
+  function showFrame(i){
+    var frames=radarState.frames; if(!frames.length) return;
+    i=(i+frames.length)%frames.length; radarState.idx=i;
+    frames.forEach(function(fr){ var l=frameLayer(fr); l.setOpacity(0); });
+    frameLayer(frames[i]).setOpacity(0.72);
+    var rangeEl=document.getElementById('wx-radar-range'); if(rangeEl) rangeEl.value=String(i);
+    var t=new Date(frames[i].time*1000), now=Date.now();
+    var hhmm=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+    var isFut=t.getTime()>now+60000;
+    var lbl=document.getElementById('wx-radar-time');
+    if(lbl) lbl.innerHTML=isFut?'<span class="fut">▶ '+hhmm+' (Vorhersage)</span>':'<span class="past">'+hhmm+(Math.abs(t.getTime()-now)<300000?' (jetzt)':'')+'</span>';
+  }
+  function playLoop(){
+    clearTimeout(radarState.timer);
+    if(!radarState.playing) return;
+    radarState.timer=setTimeout(function(){
+      var next=radarState.idx+1;
+      if(next>=radarState.frames.length){ next=0; /* Loop */ }
+      showFrame(next);
+      playLoop();
+    }, radarState.idx===radarState.frames.length-1?1400:600); /* am Ende kurz halten */
+  }
+  function setPlayIcon(){ var b=document.getElementById('wx-radar-play'); if(b) b.textContent=radarState.playing?'❚❚':'▶'; }
 
 
 
