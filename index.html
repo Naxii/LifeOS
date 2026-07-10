@@ -6,7 +6,7 @@
 <title>Naxii LifeOS</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="LifeOS">
 <meta name="theme-color" content="#0C120D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,6 +16,10 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 html{-webkit-text-size-adjust:100%;background:var(--bg,#0C120D)}
 :root{--nav-w:236px;--radius:22px;--sat:env(safe-area-inset-top,0px)}
+/* Standalone-Web-App: falls env() 0 liefert, garantierter Mindestabstand für Statusleiste/Notch */
+@media all and (display-mode:standalone){
+  :root{--sat:max(env(safe-area-inset-top,0px),50px)}
+}
 html,body{height:100%;height:100dvh}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg,#0C120D);color:var(--text,#EAF0FF);overflow:hidden;transition:background .35s;position:fixed;inset:0;width:100%;height:100%;height:100dvh}
 body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
@@ -101,6 +105,32 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .sinput:focus{border-color:var(--teal,#6BA5FF)}
 .srow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 .note{font-size:12px;color:var(--text3,rgba(200,212,245,.4));line-height:1.55;margin-top:10px}
+/* ---------- PIN-Sperre ---------- */
+#pinlock{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--bg,#0C120D) 82%,#000);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  padding:calc(24px + env(safe-area-inset-top,0px)) 22px calc(24px + env(safe-area-inset-bottom,0px))}
+#pinlock.on{display:flex}
+.pinbox{width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.pinlogo{width:60px;height:60px;border-radius:18px;display:grid;place-items:center;margin-bottom:18px;overflow:hidden;
+  background:linear-gradient(135deg,var(--teal,#8FD25C),color-mix(in srgb,var(--teal,#8FD25C) 60%,#2E5238));
+  font-family:'Space Grotesk';font-weight:700;font-size:26px;color:#062012;box-shadow:0 8px 26px rgba(0,0,0,.35)}
+.pinlogo img{width:100%;height:100%;object-fit:cover}
+.pintitle{font-family:'Space Grotesk';font-weight:700;font-size:21px;margin-bottom:6px}
+.pinsub{font-size:13.5px;color:var(--text2);margin-bottom:24px;min-height:18px}
+.pindots{display:flex;gap:16px;margin-bottom:34px}
+.pindot{width:14px;height:14px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--text,#fff) 45%,transparent);transition:.15s}
+.pindot.f{background:var(--teal,#8FD25C);border-color:var(--teal,#8FD25C);transform:scale(1.05)}
+.pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:260px}
+.pinkey{aspect-ratio:1;border-radius:50%;border:0.5px solid var(--border,rgba(255,255,255,.12));
+  background:color-mix(in srgb,var(--surface,#161F17) 70%,transparent);color:var(--text);
+  font-family:'Space Grotesk';font-weight:600;font-size:24px;cursor:pointer;transition:.12s;display:grid;place-items:center}
+.pinkey:active{transform:scale(.94);background:color-mix(in srgb,var(--teal,#8FD25C) 24%,transparent)}
+.pinkey.empty{background:none;border:none;cursor:default}
+.pinkey.act{font-size:16px;font-weight:500}
+.pincancel{margin-top:26px;background:none;border:0;color:var(--text3);font:600 14px 'Inter';cursor:pointer;padding:8px 16px}
+.pinshake{animation:pinshake .4s}
+@keyframes pinshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+/* ---------- PIN-Sperre Ende ---------- */
 /* ---------- Wetter-Tab ---------- */
 #wetterwrap{max-width:920px;overflow-x:hidden}
 #wetterwrap *{min-width:0}
@@ -142,6 +172,40 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .wx-empty .bico{font-size:44px;margin-bottom:12px}
 .wx-reload{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:10px 16px;border-radius:13px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1E2A1F);color:var(--text);font:600 13px 'Inter';cursor:pointer}
 @media(max-width:520px){.wx-metrics{grid-template-columns:repeat(2,1fr)}}
+/* ---------- Formel 1 ---------- */
+#f1wrap{max-width:920px}
+.f1-hero{border-radius:24px;padding:20px 20px 18px;margin-bottom:14px;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,#E10600 -10%,color-mix(in srgb,#E10600 30%,var(--surface,#161F17)) 45%,var(--surface,#161F17));
+  border:0.5px solid var(--border,rgba(255,255,255,.1));box-shadow:0 12px 40px rgba(225,6,0,.14)}
+.f1-hero .lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:8px;font-weight:600}
+.f1-hero .rnd{font-size:12px;color:rgba(255,255,255,.7);margin-bottom:2px}
+.f1-hero .gp{font-family:'Space Grotesk';font-weight:700;font-size:clamp(20px,5.5vw,27px);line-height:1.1;margin-bottom:3px;display:flex;align-items:center;gap:9px}
+.f1-hero .circ{font-size:13px;color:rgba(255,255,255,.8)}
+.f1-hero .cd{display:flex;gap:10px;margin-top:14px}
+.f1-cdbox{background:rgba(0,0,0,.28);border-radius:12px;padding:9px 4px;text-align:center;flex:1;backdrop-filter:blur(4px)}
+.f1-cdbox .n{font-family:'Space Grotesk';font-weight:700;font-size:22px;line-height:1}
+.f1-cdbox .u{font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.7);margin-top:3px}
+.f1-hero.done{background:linear-gradient(150deg,#444 -10%,var(--surface,#161F17) 55%)}
+.f1-card{background:color-mix(in srgb,var(--surface,#161F17) 80%,transparent);border:0.5px solid var(--border,rgba(255,255,255,.07));border-radius:20px;padding:14px 14px 8px;margin-bottom:14px}
+.f1-card .h{font-size:12.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;padding:0 2px}
+.f1-row{display:flex;align-items:center;gap:12px;padding:11px 8px;border-radius:13px;transition:background .15s;cursor:default}
+.f1-row+.f1-row{border-top:0.5px solid var(--border,rgba(255,255,255,.05))}
+.f1-row.next{background:color-mix(in srgb,#E10600 12%,transparent);border-radius:13px}
+.f1-row.past{opacity:.5}
+.f1-flag{font-size:24px;width:32px;text-align:center;flex-shrink:0}
+.f1-info{flex:1;min-width:0}
+.f1-name{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f1-sub{font-size:11.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f1-date{text-align:right;flex-shrink:0}
+.f1-date .d{font-family:'Space Grotesk';font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.f1-date .badge{font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:#E10600;font-weight:700;margin-top:1px}
+.f1-sprint{display:inline-block;font-size:8.5px;font-weight:700;letter-spacing:.3px;background:#E10600;color:#fff;padding:1px 5px;border-radius:5px;margin-left:6px;vertical-align:middle}
+.f1-round{font-family:'Space Grotesk';font-weight:700;font-size:12px;width:26px;flex-shrink:0;color:var(--text3);text-align:center}
+/* Dashboard-Widget */
+#dash-f1-card .f1w-gp{font-family:'Space Grotesk';font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px;margin:2px 0 3px}
+#dash-f1-card .f1w-sub{font-size:12px;color:var(--text3)}
+#dash-f1-card .f1w-cd{font-family:'Space Grotesk';font-weight:700;font-size:20px;color:#E10600;margin-top:6px}
+/* ---------- Formel 1 Ende ---------- */
 /* ---------- Kalender ---------- */
 .calbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
 .calbar .mon{font-family:'Space Grotesk';font-size:20px;font-weight:700;min-width:170px}
@@ -401,6 +465,16 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 <body>
 <div id="boot"><div class="mono"><span>N</span></div></div>
 <div id="os">
+  <div id="pinlock" style="display:none">
+    <div class="pinbox">
+      <div class="pinlogo"><span>N</span></div>
+      <div class="pintitle" id="pin-title">Finanzen gesperrt</div>
+      <div class="pinsub" id="pin-sub">PIN eingeben</div>
+      <div class="pindots" id="pin-dots"></div>
+      <div class="pinpad" id="pin-pad"></div>
+      <button class="pincancel" id="pin-cancel">Abbrechen</button>
+    </div>
+  </div>
   <nav id="rail">
     <div id="brand"><div class="mono"><span>N</span></div><div><div class="t">LifeOS</div><div class="s">Naxii · Personal OS</div></div></div>
     <div id="railnav"></div>
@@ -483,6 +557,9 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
     <section class="view" id="view-wetter">
       <div id="wetterwrap"></div>
     </section>
+    <section class="view" id="view-f1">
+      <div id="f1wrap"></div>
+    </section>
     <!-- Weitere Module -->
     <section class="view" id="view-module">
       <div class="h1">Weitere Module</div>
@@ -521,6 +598,11 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
           </div>
           <div class="note" id="set-partner-status">Hinterlege ihre Adresse (Straße + Hausnummer möglich). Das Dashboard zeigt dann live, wie weit dein aktueller Standort (Luftlinie) entfernt ist – mit kleinem Herz im Hero.</div>
           <div class="srow" id="set-partner-clear-row" style="display:none"><button class="qbtn" id="set-partner-clear">Entfernen</button></div>
+        </div>
+        <div class="card">
+          <div class="ttl">Finanzen-Sperre</div>
+          <div class="note" id="pin-status">Schütze den Finanzen-Tab mit einer 4-stelligen PIN. Sie wird beim Öffnen der Finanzen abgefragt.</div>
+          <div class="srow" id="pin-actions"></div>
         </div>
         <div class="card">
           <div class="ttl">Daten &amp; Backup</div>
@@ -581,7 +663,8 @@ var ICONS={
   fuel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15"/><path d="M2 21h14"/><path d="M14 10h2a2 2 0 0 1 2 2v4.5a1.5 1.5 0 0 0 3 0V9l-3-3"/><path d="M6 8h6"/></svg>',
   target:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>',
   pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4L8 20l-5 1 1-5L17 3z"/></svg>',
-  weather:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3.2"/><path d="M8 1.5v1.5M8 15v1.5M1.5 9H3M13 9h1.5M3.6 4.6l1 1M11.4 4.6l-1 1"/><path d="M12.5 15a4 4 0 0 1 .3-8 5 5 0 0 1 9.2 2.5 3.5 3.5 0 0 1-.5 6.9H12.5z"/></svg>'
+  weather:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3.2"/><path d="M8 1.5v1.5M8 15v1.5M1.5 9H3M13 9h1.5M3.6 4.6l1 1M11.4 4.6l-1 1"/><path d="M12.5 15a4 4 0 0 1 .3-8 5 5 0 0 1 9.2 2.5 3.5 3.5 0 0 1-.5 6.9H12.5z"/></svg>',
+  f1:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h6l2-2h5l3 2M3 13v3h2a2 2 0 0 0 4 0h6a2 2 0 0 0 4 0h1v-3M3 13l1.5-3.5A2 2 0 0 1 6.3 8H12"/><circle cx="7" cy="16" r="1.5"/><circle cx="17" cy="16" r="1.5"/></svg>'
 };
 
 var LifeOS=(function(){
@@ -693,11 +776,16 @@ var LifeOS=(function(){
     {id:'kalender',n:'Kalender',ic:'cal',d:1},
     {id:'aufgaben',n:'Aufgaben',ic:'task',d:0},
     {id:'wetter',n:'Wetter',ic:'weather',d:0},
+    {id:'f1',n:'Formel 1',ic:'f1',d:0},
     {id:'module',n:'Module',ic:'mods',d:1},
     {id:'settings',n:'Einstellungen',ic:'gear',d:0}
   ];
   var current='dashboard';
   function go(id){
+    /* PIN-Gate: Finanzen nur nach Entsperrung (falls PIN gesetzt) */
+    if(id==='finanz' && master.lifeos.finPin && !finUnlocked){
+      pendingNav='finanz'; openPinLock(); return;
+    }
     current=id;
     document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('on', v.id==='view-'+id); });
     document.querySelectorAll('.nitem').forEach(function(n){ n.classList.toggle('on', n.getAttribute('data-go')===id); });
@@ -705,6 +793,7 @@ var LifeOS=(function(){
     if(id==='kalender') renderCal();
     if(id==='aufgaben') renderTasks();
     if(id==='wetter'){ renderWetter(); loadWeather(true); }
+    if(id==='f1') renderF1();
     if(id==='sprit'&&fzgTab==='wart') renderWart();
     if(id==='edu') renderEdu();
     if(id==='health') renderHealth();
@@ -715,6 +804,72 @@ var LifeOS=(function(){
     if(id==='ai') renderChat();
     if(id==='finanz'||id==='sprit') setTimeout(function(){ sendTo(id,{lifeos:'rerender'}); },60);
   }
+
+  /* ------------------------------ PIN-Sperre ------------------------------- */
+  var finUnlocked=false, pendingNav=null, pinBuf='', pinMode='check', pinFirst='', pinRemoveNext=false;
+  function pinHash(str){ var h=5381; for(var i=0;i<str.length;i++){ h=((h<<5)+h)+str.charCodeAt(i); h=h&0xffffffff; } return String(h>>>0); }
+  function buildPinPad(){
+    var pad=document.getElementById('pin-pad'); if(!pad) return;
+    var keys=['1','2','3','4','5','6','7','8','9','','0','del'];
+    pad.innerHTML=keys.map(function(k){
+      if(k==='') return '<button class="pinkey empty" disabled></button>';
+      if(k==='del') return '<button class="pinkey act" data-k="del">⌫</button>';
+      return '<button class="pinkey" data-k="'+k+'">'+k+'</button>';
+    }).join('');
+    pad.querySelectorAll('.pinkey[data-k]').forEach(function(b){ b.onclick=function(){ pinPress(b.getAttribute('data-k')); }; });
+  }
+  function renderPinDots(){
+    var d=document.getElementById('pin-dots'); if(!d) return;
+    var len=4; var html='';
+    for(var i=0;i<len;i++){ html+='<div class="pindot'+(i<pinBuf.length?' f':'')+'"></div>'; }
+    d.innerHTML=html;
+  }
+  function pinPress(k){
+    if(k==='del'){ pinBuf=pinBuf.slice(0,-1); renderPinDots(); return; }
+    if(pinBuf.length>=4) return;
+    pinBuf+=k; renderPinDots();
+    if(pinBuf.length===4) setTimeout(pinSubmit,120);
+  }
+  function pinShake(){
+    var box=document.querySelector('.pinbox'); if(box){ box.classList.remove('pinshake'); void box.offsetWidth; box.classList.add('pinshake'); }
+  }
+  function pinSubmit(){
+    var sub=document.getElementById('pin-sub');
+    if(pinMode==='check'){
+      if(pinHash(pinBuf)===master.lifeos.finPin){
+        if(pinRemoveNext){ pinRemoveNext=false; master.lifeos.finPin=null; finUnlocked=false; persist(); closePinLock(); if(typeof refreshPinUI==='function')refreshPinUI(); return; }
+        finUnlocked=true; closePinLock(); if(pendingNav){ var n=pendingNav; pendingNav=null; go(n); }
+      }
+      else { pinShake(); pinBuf=''; renderPinDots(); if(sub){ sub.textContent='Falsche PIN'; sub.style.color='var(--red,#FF7A7A)'; setTimeout(function(){ sub.textContent='PIN eingeben'; sub.style.color=''; },1200); } }
+    } else if(pinMode==='set1'){
+      pinFirst=pinBuf; pinBuf=''; renderPinDots(); pinMode='set2';
+      if(sub) sub.textContent='PIN wiederholen';
+    } else if(pinMode==='set2'){
+      if(pinBuf===pinFirst){ master.lifeos.finPin=pinHash(pinBuf); persist(); finUnlocked=true; closePinLock(); if(typeof refreshPinUI==='function')refreshPinUI(); }
+      else { pinShake(); pinBuf=''; pinFirst=''; pinMode='set1'; renderPinDots(); if(sub){ sub.textContent='Stimmt nicht überein – neu'; sub.style.color='var(--red,#FF7A7A)'; setTimeout(function(){ sub.textContent='Neue PIN wählen'; sub.style.color=''; },1400); } }
+    }
+  }
+  function openPinLock(){
+    pinMode='check'; pinBuf=''; pinFirst='';
+    var t=document.getElementById('pin-title'), sub=document.getElementById('pin-sub');
+    if(t) t.textContent='Finanzen gesperrt'; if(sub){ sub.textContent='PIN eingeben'; sub.style.color=''; }
+    buildPinPad(); renderPinDots();
+    var lg=document.querySelector('.pinlogo');
+    if(lg && appIconSrc){ lg.innerHTML='<img src="'+appIconSrc+'" alt="">'; }
+    document.getElementById('pinlock').classList.add('on');
+  }
+  function openPinSetup(){
+    pinMode='set1'; pinBuf=''; pinFirst='';
+    var t=document.getElementById('pin-title'), sub=document.getElementById('pin-sub');
+    if(t) t.textContent='PIN einrichten'; if(sub){ sub.textContent='Neue PIN wählen'; sub.style.color=''; }
+    buildPinPad(); renderPinDots();
+    var lg=document.querySelector('.pinlogo');
+    if(lg && appIconSrc){ lg.innerHTML='<img src="'+appIconSrc+'" alt="">'; }
+    document.getElementById('pinlock').classList.add('on');
+  }
+  function closePinLock(){ document.getElementById('pinlock').classList.remove('on'); pinBuf=''; }
+
+  document.addEventListener('DOMContentLoaded',function(){ var c=document.getElementById('pin-cancel'); if(c) c.onclick=function(){ closePinLock(); pendingNav=null; if(current!=='finanz') go(current); else go('dashboard'); }; });
   function buildNav(){
     document.getElementById('railnav').innerHTML=NAV.map(function(m){ return '<div class="nitem" data-go="'+m.id+'">'+ICONS[m.ic]+'<span>'+m.n+'</span></div>'; }).join('');
     document.getElementById('dock').innerHTML=NAV.filter(function(m){return m.d}).map(function(m){ return '<div class="nitem" data-go="'+m.id+'">'+ICONS[m.ic]+'<span>'+m.n+'</span></div>'; }).join('');
@@ -823,12 +978,23 @@ var LifeOS=(function(){
       +'<div class="wdrops">'+Array.from({length:wGoal}).map(function(_,i){return '<div class="wdrop'+(i<wToday?' on':'')+'"></div>'}).join('')+'</div></div>';
     /* Notizen */
     W.notes='<div class="card"><div class="ttl">'+ICONS.pen+'Schnellnotizen</div><textarea id="notes" placeholder="Gedanken, Einkäufe, Ideen …"></textarea></div>';
+    /* Formel 1 – nächstes Rennen */
+    (function(){
+      var ni=(typeof f1NextIdx==='function')?f1NextIdx():-1;
+      if(ni<0){ W.f1='<div class="card link" data-go="f1" id="dash-f1-card"><div class="ttl">'+ICONS.f1+'Formel 1</div><div class="empty" style="padding:6px 0">Saison 2026 beendet 🏁</div></div>'; return; }
+      var nx=F1_2026[ni], days=f1DaysTo(nx.d);
+      var cd=days===0?'Heute Rennen! 🏁':(days===1?'Morgen':'in '+days+' Tagen');
+      W.f1='<div class="card link" data-go="f1" id="dash-f1-card"><div class="ttl">'+ICONS.f1+'Formel 1 · Nächstes Rennen</div>'
+        +'<div class="f1w-gp">'+nx.f+' '+esc(nx.gp)+(nx.sp?'<span class="f1-sprint">Sprint</span>':'')+'</div>'
+        +'<div class="f1w-sub">Runde '+nx.r+' · '+esc(nx.c)+' · '+f1FmtDate(nx.d)+'</div>'
+        +'<div class="f1w-cd">'+cd+'</div></div>';
+    })();
 
     /* --- Reihenfolge & Sichtbarkeit (vom Nutzer anpassbar) --- */
-    var DASH_DEF=['remind','fin','frei','goals','fzg','termine','heute','quick','wasser','notes'];
-    var NAMES={remind:'Erinnerungen',fin:'Finanzen',frei:'Frei Konto',goals:'Sparziele',fzg:'Fahrzeug',termine:'Nächste Termine',heute:'Heute fällig',quick:'Schnellzugriff',wasser:'Wasser',notes:'Schnellnotizen'};
+    var DASH_DEF=['remind','fin','frei','f1','goals','fzg','termine','heute','quick','wasser','notes'];
+    var NAMES={remind:'Erinnerungen',fin:'Finanzen',frei:'Frei Konto',f1:'Formel 1',goals:'Sparziele',fzg:'Fahrzeug',termine:'Nächste Termine',heute:'Heute fällig',quick:'Schnellzugriff',wasser:'Wasser',notes:'Schnellnotizen'};
     var dc=master.lifeos.dash;
-    if(!dc||!Array.isArray(dc.order)){ dc={order:DASH_DEF.slice(),hidden:[]}; master.lifeos.dash=dc; }
+    if(!dc||!Array.isArray(dc.order)){ dc={order:DASH_DEF.slice(),hidden:['f1']}; master.lifeos.dash=dc; }
     DASH_DEF.forEach(function(id){ if(dc.order.indexOf(id)<0) dc.order.push(id); });
     dc.order=dc.order.filter(function(id){ return DASH_DEF.indexOf(id)>=0; });
     dc.hidden=(dc.hidden||[]).filter(function(id){ return DASH_DEF.indexOf(id)>=0; });
@@ -960,6 +1126,27 @@ var LifeOS=(function(){
     pClear.onclick=function(){ master.lifeos.partner=null; persist(); pName.value=''; pAddr.value='';
       pClearRow.style.display='none'; pStatus.textContent='Entfernt. Hinterlege einen neuen Ort, um die Anzeige wieder einzublenden.';
       if(current==='dashboard') renderDist(); };
+    /* --- Finanzen-PIN --- */
+    window.refreshPinUI=function(){
+      var act=document.getElementById('pin-actions'), st=document.getElementById('pin-status'); if(!act) return;
+      if(master.lifeos.finPin){
+        st.innerHTML='🔒 Finanzen sind mit einer PIN geschützt.';
+        act.innerHTML='<button class="qbtn" id="pin-change">PIN ändern</button><button class="qbtn" id="pin-remove" style="color:var(--red,#FF7A7A);border-color:var(--red,#FF7A7A)">Sperre entfernen</button>';
+        document.getElementById('pin-change').onclick=function(){ openPinSetup(); };
+        document.getElementById('pin-remove').onclick=function(){
+          openPinLock();
+          var sub=document.getElementById('pin-sub'); if(sub) sub.textContent='PIN zum Entfernen eingeben';
+          pinMode='check';
+          /* Nach korrekter Eingabe entfernen: wir kapern pinSubmit via Flag */
+          pinRemoveNext=true;
+        };
+      } else {
+        st.innerHTML='Schütze den Finanzen-Tab mit einer 4-stelligen PIN. Sie wird beim Öffnen der Finanzen abgefragt.';
+        act.innerHTML='<button class="qbtn" id="pin-set">PIN einrichten</button>';
+        document.getElementById('pin-set').onclick=function(){ openPinSetup(); };
+      }
+    };
+    refreshPinUI();
     document.getElementById('impfile').onchange=function(ev){
       var f=ev.target.files[0]; if(!f)return;
       var r=new FileReader();
@@ -1655,6 +1842,84 @@ var LifeOS=(function(){
 
   /* ------------------------------ Wetter-Tab ------------------------------- */
   var WDAYS=['So','Mo','Di','Mi','Do','Fr','Sa'];
+
+  /* ------------------------------ Formel 1 --------------------------------- */
+  var F1_2026=[
+    {r:1,gp:'Australien',c:'Melbourne',f:'\u{1F1E6}\u{1F1FA}',d:'2026-03-08'},
+    {r:2,gp:'China',c:'Shanghai',f:'\u{1F1E8}\u{1F1F3}',d:'2026-03-15',sp:1},
+    {r:3,gp:'Japan',c:'Suzuka',f:'\u{1F1EF}\u{1F1F5}',d:'2026-03-29'},
+    {r:4,gp:'Bahrain',c:'Sakhir',f:'\u{1F1E7}\u{1F1ED}',d:'2026-04-12'},
+    {r:5,gp:'Saudi-Arabien',c:'Dschidda',f:'\u{1F1F8}\u{1F1E6}',d:'2026-04-19'},
+    {r:6,gp:'Miami',c:'Miami',f:'\u{1F1FA}\u{1F1F8}',d:'2026-05-03',sp:1},
+    {r:7,gp:'Kanada',c:'Montreal',f:'\u{1F1E8}\u{1F1E6}',d:'2026-05-24',sp:1},
+    {r:8,gp:'Monaco',c:'Monte Carlo',f:'\u{1F1F2}\u{1F1E8}',d:'2026-06-07'},
+    {r:9,gp:'Spanien',c:'Barcelona',f:'\u{1F1EA}\u{1F1F8}',d:'2026-06-14'},
+    {r:10,gp:'\u00D6sterreich',c:'Spielberg',f:'\u{1F1E6}\u{1F1F9}',d:'2026-06-28'},
+    {r:11,gp:'Gro\u00DFbritannien',c:'Silverstone',f:'\u{1F1EC}\u{1F1E7}',d:'2026-07-05',sp:1},
+    {r:12,gp:'Belgien',c:'Spa-Francorchamps',f:'\u{1F1E7}\u{1F1EA}',d:'2026-07-19'},
+    {r:13,gp:'Ungarn',c:'Budapest',f:'\u{1F1ED}\u{1F1FA}',d:'2026-07-26'},
+    {r:14,gp:'Niederlande',c:'Zandvoort',f:'\u{1F1F3}\u{1F1F1}',d:'2026-08-23',sp:1},
+    {r:15,gp:'Italien',c:'Monza',f:'\u{1F1EE}\u{1F1F9}',d:'2026-09-06'},
+    {r:16,gp:'Spanien (Madrid)',c:'Madrid',f:'\u{1F1EA}\u{1F1F8}',d:'2026-09-13'},
+    {r:17,gp:'Aserbaidschan',c:'Baku',f:'\u{1F1E6}\u{1F1FF}',d:'2026-09-26'},
+    {r:18,gp:'Singapur',c:'Marina Bay',f:'\u{1F1F8}\u{1F1EC}',d:'2026-10-11',sp:1},
+    {r:19,gp:'USA',c:'Austin',f:'\u{1F1FA}\u{1F1F8}',d:'2026-10-25'},
+    {r:20,gp:'Mexiko',c:'Mexiko-Stadt',f:'\u{1F1F2}\u{1F1FD}',d:'2026-11-01'},
+    {r:21,gp:'Brasilien',c:'S\u00E3o Paulo',f:'\u{1F1E7}\u{1F1F7}',d:'2026-11-08'},
+    {r:22,gp:'Las Vegas',c:'Las Vegas',f:'\u{1F1FA}\u{1F1F8}',d:'2026-11-21'},
+    {r:23,gp:'Katar',c:'Lusail',f:'\u{1F1F6}\u{1F1E6}',d:'2026-11-29'},
+    {r:24,gp:'Abu Dhabi',c:'Yas Marina',f:'\u{1F1E6}\u{1F1EA}',d:'2026-12-06'}
+  ];
+  function f1NextIdx(){
+    var today=todayStr();
+    for(var i=0;i<F1_2026.length;i++){ if(F1_2026[i].d>=today) return i; }
+    return -1; /* Saison vorbei */
+  }
+  function f1DaysTo(dstr){
+    var a=new Date(todayStr()+'T00:00'), b=new Date(dstr+'T00:00');
+    return Math.round((b-a)/86400000);
+  }
+  function f1FmtDate(dstr){
+    var d=new Date(dstr+'T00:00');
+    return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.';
+  }
+  function renderF1(){
+    var w=document.getElementById('f1wrap'); if(!w) return;
+    var ni=f1NextIdx();
+    var h='';
+    if(ni<0){
+      h+='<div class="f1-hero done"><div class="lbl">Formel 1 · Saison 2026</div>'
+        +'<div class="gp">Saison beendet 🏁</div><div class="circ">Bis zur Saison 2027!</div></div>';
+    } else {
+      var nx=F1_2026[ni], days=f1DaysTo(nx.d);
+      var wknd=new Date(nx.d+'T00:00'); var fr=new Date(wknd); fr.setDate(fr.getDate()-2);
+      var span=String(fr.getDate()).padStart(2,'0')+'.–'+String(wknd.getDate()).padStart(2,'0')+'.'+String(wknd.getMonth()+1).padStart(2,'0')+'.';
+      h+='<div class="f1-hero"><div class="lbl">Nächstes Rennen · Formel 1 2026</div>'
+        +'<div class="rnd">Runde '+nx.r+' von 24</div>'
+        +'<div class="gp">'+nx.f+' GP '+esc(nx.gp)+(nx.sp?'<span class="f1-sprint">Sprint</span>':'')+'</div>'
+        +'<div class="circ">'+esc(nx.c)+' · Rennwochenende '+span+'</div>'
+        +'<div class="cd">'
+        +'<div class="f1-cdbox"><div class="n">'+(days>0?days:'0')+'</div><div class="u">Tage</div></div>'
+        +'<div class="f1-cdbox"><div class="n">'+nx.r+'</div><div class="u">Runde</div></div>'
+        +'<div class="f1-cdbox"><div class="n">'+(24-nx.r+1)+'</div><div class="u">verbleibend</div></div>'
+        +'</div></div>';
+    }
+    /* Volle Renn-Liste */
+    var rows='';
+    for(var i=0;i<F1_2026.length;i++){
+      var e=F1_2026[i], isNext=(i===ni), isPast=(f1DaysTo(e.d)<0);
+      rows+='<div class="f1-row'+(isNext?' next':'')+(isPast?' past':'')+'">'
+        +'<div class="f1-round">'+e.r+'</div>'
+        +'<div class="f1-flag">'+e.f+'</div>'
+        +'<div class="f1-info"><div class="f1-name">'+esc(e.gp)+(e.sp?'<span class="f1-sprint">Sprint</span>':'')+'</div>'
+        +'<div class="f1-sub">'+esc(e.c)+'</div></div>'
+        +'<div class="f1-date"><div class="d">'+f1FmtDate(e.d)+'</div>'+(isNext?'<div class="badge">Nächstes</div>':(isPast?'':''))+'</div>'
+        +'</div>';
+    }
+    h+='<div class="f1-card"><div class="h">Rennkalender 2026 · 24 Rennen</div>'+rows+'</div>';
+    w.innerHTML=h;
+  }
+
   function renderWetter(){
     var w=document.getElementById('wetterwrap'); if(!w) return;
     if(!weather || !weather.daily){
@@ -1938,10 +2203,12 @@ var LifeOS=(function(){
 
 
   /* ------------------------- Eigenes App-Icon (icon.png) ------------------- */
+  var appIconSrc='';
   function applyAppIcon(){
     var img=new Image();
     img.onload=function(){
       if(!img.naturalWidth) return;
+      appIconSrc=img.src;
       document.querySelectorAll('.mono').forEach(function(m){
         if(m.querySelector('img')) return;
         var i=document.createElement('img'); i.src=img.src; i.alt='LifeOS';
