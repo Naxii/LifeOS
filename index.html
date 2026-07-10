@@ -175,22 +175,22 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 /* ---------- Formel 1 ---------- */
 #f1wrap{max-width:920px}
 .f1-hero{border-radius:24px;padding:20px 20px 18px;margin-bottom:14px;position:relative;overflow:hidden;
-  background:linear-gradient(150deg,#E10600 -10%,color-mix(in srgb,#E10600 30%,var(--surface,#161F17)) 45%,var(--surface,#161F17));
-  border:0.5px solid var(--border,rgba(255,255,255,.1));box-shadow:0 12px 40px rgba(225,6,0,.14)}
-.f1-hero .lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:8px;font-weight:600}
-.f1-hero .rnd{font-size:12px;color:rgba(255,255,255,.7);margin-bottom:2px}
+  background:linear-gradient(150deg,var(--teal,#8FD25C) -10%,color-mix(in srgb,var(--teal,#8FD25C) 26%,var(--surface,#161F17)) 45%,var(--surface,#161F17));
+  border:0.5px solid var(--border,rgba(255,255,255,.1));box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.f1-hero .lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:color-mix(in srgb,var(--text,#EAF0FF) 78%,transparent);margin-bottom:8px;font-weight:600}
+.f1-hero .rnd{font-size:12px;color:color-mix(in srgb,var(--text,#EAF0FF) 72%,transparent);margin-bottom:2px}
 .f1-hero .gp{font-family:'Space Grotesk';font-weight:700;font-size:clamp(20px,5.5vw,27px);line-height:1.1;margin-bottom:3px;display:flex;align-items:center;gap:9px}
-.f1-hero .circ{font-size:13px;color:rgba(255,255,255,.8)}
+.f1-hero .circ{font-size:13px;color:color-mix(in srgb,var(--text,#EAF0FF) 82%,transparent)}
 .f1-hero .cd{display:flex;gap:10px;margin-top:14px}
 .f1-cdbox{background:rgba(0,0,0,.28);border-radius:12px;padding:9px 4px;text-align:center;flex:1;backdrop-filter:blur(4px)}
 .f1-cdbox .n{font-family:'Space Grotesk';font-weight:700;font-size:22px;line-height:1}
-.f1-cdbox .u{font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.7);margin-top:3px}
+.f1-cdbox .u{font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:color-mix(in srgb,var(--text,#EAF0FF) 72%,transparent);margin-top:3px}
 .f1-hero.done{background:linear-gradient(150deg,#444 -10%,var(--surface,#161F17) 55%)}
 .f1-card{background:color-mix(in srgb,var(--surface,#161F17) 80%,transparent);border:0.5px solid var(--border,rgba(255,255,255,.07));border-radius:20px;padding:14px 14px 8px;margin-bottom:14px}
 .f1-card .h{font-size:12.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;padding:0 2px}
 .f1-row{display:flex;align-items:center;gap:12px;padding:11px 8px;border-radius:13px;transition:background .15s;cursor:default}
 .f1-row+.f1-row{border-top:0.5px solid var(--border,rgba(255,255,255,.05))}
-.f1-row.next{background:color-mix(in srgb,#E10600 12%,transparent);border-radius:13px}
+.f1-row.next{background:color-mix(in srgb,var(--teal,#8FD25C) 14%,transparent);border-radius:13px}
 .f1-row.past{opacity:.5}
 .f1-flag{font-size:24px;width:32px;text-align:center;flex-shrink:0}
 .f1-info{flex:1;min-width:0}
@@ -198,13 +198,27 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .f1-sub{font-size:11.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .f1-date{text-align:right;flex-shrink:0}
 .f1-date .d{font-family:'Space Grotesk';font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
-.f1-date .badge{font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:#E10600;font-weight:700;margin-top:1px}
-.f1-sprint{display:inline-block;font-size:8.5px;font-weight:700;letter-spacing:.3px;background:#E10600;color:#fff;padding:1px 5px;border-radius:5px;margin-left:6px;vertical-align:middle}
+.f1-date .badge{font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:var(--teal,#8FD25C);font-weight:700;margin-top:1px}
+.f1-sprint{display:inline-block;font-size:8.5px;font-weight:700;letter-spacing:.3px;background:var(--teal,#8FD25C);color:#062012;padding:1px 5px;border-radius:5px;margin-left:6px;vertical-align:middle}
 .f1-round{font-family:'Space Grotesk';font-weight:700;font-size:12px;width:26px;flex-shrink:0;color:var(--text3);text-align:center}
 /* Dashboard-Widget */
 #dash-f1-card .f1w-gp{font-family:'Space Grotesk';font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px;margin:2px 0 3px}
 #dash-f1-card .f1w-sub{font-size:12px;color:var(--text3)}
-#dash-f1-card .f1w-cd{font-family:'Space Grotesk';font-weight:700;font-size:20px;color:#E10600;margin-top:6px}
+#dash-f1-card .f1w-cd{font-family:'Space Grotesk';font-weight:700;font-size:20px;color:var(--teal,#8FD25C);margin-top:6px}
+.f1-load{font-size:12.5px;color:var(--text3);padding:6px 2px 12px}
+.f1-upd{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.3px;margin-left:4px}
+.f1-st{display:flex;align-items:center;gap:10px;padding:9px 4px;border-radius:11px}
+.f1-st+.f1-st{border-top:0.5px solid var(--border,rgba(255,255,255,.05))}
+.f1-pos{font-family:'Space Grotesk';font-weight:700;font-size:14px;width:22px;text-align:center;flex-shrink:0;color:var(--text2)}
+.f1-bar{width:4px;height:26px;border-radius:99px;flex-shrink:0}
+.f1-stinfo{flex:1;min-width:0}
+.f1-stname{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f1-stteam{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f1-pts{font-family:'Space Grotesk';font-weight:700;font-size:15px;flex-shrink:0;text-align:right}
+.f1-pts span{font-size:9px;font-weight:500;color:var(--text3);margin-left:2px}
+.f1-seg{display:flex;gap:4px;background:color-mix(in srgb,var(--surface,#161F17) 70%,transparent);border:0.5px solid var(--border,rgba(255,255,255,.08));border-radius:14px;padding:4px;margin-bottom:14px}
+.f1-segbtn{flex:1;border:0;border-radius:10px;padding:10px 8px;background:none;color:var(--text2);font:600 13.5px 'Inter';cursor:pointer;transition:.15s}
+.f1-segbtn.on{background:var(--teal,#8FD25C);color:#062012}
 /* ---------- Formel 1 Ende ---------- */
 /* ---------- Kalender ---------- */
 .calbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
@@ -465,7 +479,7 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 <body>
 <div id="boot"><div class="mono"><span>N</span></div></div>
 <div id="os">
-  <div id="pinlock" style="display:none">
+  <div id="pinlock">
     <div class="pinbox">
       <div class="pinlogo"><span>N</span></div>
       <div class="pintitle" id="pin-title">Finanzen gesperrt</div>
@@ -782,6 +796,8 @@ var LifeOS=(function(){
   ];
   var current='dashboard';
   function go(id){
+    /* Beim Verlassen der Finanzen wieder sperren, damit die PIN erneut abgefragt wird */
+    if(current==='finanz' && id!=='finanz' && master.lifeos.finPin){ finUnlocked=false; }
     /* PIN-Gate: Finanzen nur nach Entsperrung (falls PIN gesetzt) */
     if(id==='finanz' && master.lifeos.finPin && !finUnlocked){
       pendingNav='finanz'; openPinLock(); return;
@@ -845,7 +861,7 @@ var LifeOS=(function(){
       pinFirst=pinBuf; pinBuf=''; renderPinDots(); pinMode='set2';
       if(sub) sub.textContent='PIN wiederholen';
     } else if(pinMode==='set2'){
-      if(pinBuf===pinFirst){ master.lifeos.finPin=pinHash(pinBuf); persist(); finUnlocked=true; closePinLock(); if(typeof refreshPinUI==='function')refreshPinUI(); }
+      if(pinBuf===pinFirst){ master.lifeos.finPin=pinHash(pinBuf); persist(); finUnlocked=false; closePinLock(); if(typeof refreshPinUI==='function')refreshPinUI(); }
       else { pinShake(); pinBuf=''; pinFirst=''; pinMode='set1'; renderPinDots(); if(sub){ sub.textContent='Stimmt nicht überein – neu'; sub.style.color='var(--red,#FF7A7A)'; setTimeout(function(){ sub.textContent='Neue PIN wählen'; sub.style.color=''; },1400); } }
     }
   }
@@ -856,7 +872,7 @@ var LifeOS=(function(){
     buildPinPad(); renderPinDots();
     var lg=document.querySelector('.pinlogo');
     if(lg && appIconSrc){ lg.innerHTML='<img src="'+appIconSrc+'" alt="">'; }
-    document.getElementById('pinlock').classList.add('on');
+    var pl=document.getElementById('pinlock'); pl.style.display='flex'; pl.classList.add('on');
   }
   function openPinSetup(){
     pinMode='set1'; pinBuf=''; pinFirst='';
@@ -865,9 +881,9 @@ var LifeOS=(function(){
     buildPinPad(); renderPinDots();
     var lg=document.querySelector('.pinlogo');
     if(lg && appIconSrc){ lg.innerHTML='<img src="'+appIconSrc+'" alt="">'; }
-    document.getElementById('pinlock').classList.add('on');
+    var pl=document.getElementById('pinlock'); pl.style.display='flex'; pl.classList.add('on');
   }
-  function closePinLock(){ document.getElementById('pinlock').classList.remove('on'); pinBuf=''; }
+  function closePinLock(){ var pl=document.getElementById('pinlock'); pl.classList.remove('on'); pl.style.display='none'; pinBuf=''; }
 
   document.addEventListener('DOMContentLoaded',function(){ var c=document.getElementById('pin-cancel'); if(c) c.onclick=function(){ closePinLock(); pendingNav=null; if(current!=='finanz') go(current); else go('dashboard'); }; });
   function buildNav(){
@@ -1883,10 +1899,12 @@ var LifeOS=(function(){
     var d=new Date(dstr+'T00:00');
     return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.';
   }
+  var f1Sub='kalender';
   function renderF1(){
     var w=document.getElementById('f1wrap'); if(!w) return;
     var ni=f1NextIdx();
     var h='';
+    /* Hero (immer sichtbar) */
     if(ni<0){
       h+='<div class="f1-hero done"><div class="lbl">Formel 1 · Saison 2026</div>'
         +'<div class="gp">Saison beendet 🏁</div><div class="circ">Bis zur Saison 2027!</div></div>';
@@ -1904,20 +1922,94 @@ var LifeOS=(function(){
         +'<div class="f1-cdbox"><div class="n">'+(24-nx.r+1)+'</div><div class="u">verbleibend</div></div>'
         +'</div></div>';
     }
-    /* Volle Renn-Liste */
-    var rows='';
-    for(var i=0;i<F1_2026.length;i++){
-      var e=F1_2026[i], isNext=(i===ni), isPast=(f1DaysTo(e.d)<0);
-      rows+='<div class="f1-row'+(isNext?' next':'')+(isPast?' past':'')+'">'
-        +'<div class="f1-round">'+e.r+'</div>'
-        +'<div class="f1-flag">'+e.f+'</div>'
-        +'<div class="f1-info"><div class="f1-name">'+esc(e.gp)+(e.sp?'<span class="f1-sprint">Sprint</span>':'')+'</div>'
-        +'<div class="f1-sub">'+esc(e.c)+'</div></div>'
-        +'<div class="f1-date"><div class="d">'+f1FmtDate(e.d)+'</div>'+(isNext?'<div class="badge">Nächstes</div>':(isPast?'':''))+'</div>'
-        +'</div>';
+    /* Umschaltleiste: Kalender / WM-Stände */
+    h+='<div class="f1-seg"><button class="f1-segbtn'+(f1Sub==='kalender'?' on':'')+'" data-f1s="kalender">Rennkalender</button>'
+      +'<button class="f1-segbtn'+(f1Sub==='wm'?' on':'')+'" data-f1s="wm">WM-Stände</button></div>';
+
+    if(f1Sub==='kalender'){
+      var rows='';
+      for(var i=0;i<F1_2026.length;i++){
+        var e=F1_2026[i], isNext=(i===ni), isPast=(f1DaysTo(e.d)<0);
+        rows+='<div class="f1-row'+(isNext?' next':'')+(isPast?' past':'')+'">'
+          +'<div class="f1-round">'+e.r+'</div>'
+          +'<div class="f1-flag">'+e.f+'</div>'
+          +'<div class="f1-info"><div class="f1-name">'+esc(e.gp)+(e.sp?'<span class="f1-sprint">Sprint</span>':'')+'</div>'
+          +'<div class="f1-sub">'+esc(e.c)+'</div></div>'
+          +'<div class="f1-date"><div class="d">'+f1FmtDate(e.d)+'</div>'+(isNext?'<div class="badge">Nächstes</div>':'')+'</div>'
+          +'</div>';
+      }
+      h+='<div class="f1-card"><div class="h">Rennkalender 2026 · 24 Rennen</div>'+rows+'</div>';
+    } else {
+      h+='<div class="f1-card" id="f1-standings"><div class="h">WM-Stand · Fahrer</div><div class="f1-load">Wird geladen …</div></div>';
+      h+='<div class="f1-card" id="f1-cstandings"><div class="h">WM-Stand · Konstrukteure</div><div class="f1-load">Wird geladen …</div></div>';
     }
-    h+='<div class="f1-card"><div class="h">Rennkalender 2026 · 24 Rennen</div>'+rows+'</div>';
     w.innerHTML=h;
+    /* Umschalt-Buttons verdrahten */
+    w.querySelectorAll('[data-f1s]').forEach(function(b){ b.onclick=function(){ f1Sub=b.getAttribute('data-f1s'); renderF1(); }; });
+    if(f1Sub==='wm') loadF1Standings();
+  }
+
+  /* ---- Live-WM-Stände via Jolpica (Ergast-kompatibel, kostenlos, kein Key) ---- */
+  var f1StandCache=null;
+  async function loadF1Standings(){
+    /* Cache (30 Min) nutzen, um die API zu schonen */
+    var cached=master.lifeos.f1Cache;
+    if(cached && (Date.now()-cached.ts)<1800000){ f1StandCache=cached; paintF1Standings(cached); }
+    try{
+      var base='https://api.jolpi.ca/ergast/f1/2026/';
+      var ds=await (await fetch(base+'driverstandings/?format=json')).json();
+      var cs=await (await fetch(base+'constructorstandings/?format=json')).json();
+      var dl=(((ds.MRData||{}).StandingsTable||{}).StandingsLists||[])[0];
+      var cl=(((cs.MRData||{}).StandingsTable||{}).StandingsLists||[])[0];
+      var data={ts:Date.now(),
+        drivers:(dl&&dl.DriverStandings||[]).map(function(x){ return {pos:x.position,pts:x.points,wins:x.wins,
+          code:(x.Driver.code||x.Driver.familyName.slice(0,3).toUpperCase()),
+          name:x.Driver.givenName+' '+x.Driver.familyName,
+          team:(x.Constructors&&x.Constructors[0]?x.Constructors[0].name:'')}; }),
+        cons:(cl&&cl.ConstructorStandings||[]).map(function(x){ return {pos:x.position,pts:x.points,wins:x.wins,name:x.Constructor.name}; })
+      };
+      if(!data.drivers.length && !data.cons.length) throw new Error('leer');
+      f1StandCache=data; master.lifeos.f1Cache=data; persist();
+      if(current==='f1') paintF1Standings(data);
+    }catch(e){
+      if(!f1StandCache && current==='f1') paintF1Standings(null);
+    }
+  }
+  function teamColor(name){
+    var n=(name||'').toLowerCase(), map={
+      'red bull':'#3671C6','mclaren':'#FF8000','mclaren':'#FF8000','ferrari':'#E8002D','mercedes':'#27F4D2',
+      'aston martin':'#229971','alpine':'#0093CC','williams':'#64C4FF','rb':'#6692FF','racing bulls':'#6692FF',
+      'sauber':'#52E252','audi':'#52E252','haas':'#B6BABD','cadillac':'#C4A000'};
+    for(var k in map){ if(n.indexOf(k)>=0) return map[k]; }
+    return 'var(--teal,#8FD25C)';
+  }
+  function paintF1Standings(data){
+    var de=document.getElementById('f1-standings'), ce=document.getElementById('f1-cstandings');
+    if(!data){
+      if(de) de.innerHTML='<div class="h">WM-Stand · Fahrer</div><div class="f1-load">Nicht verfügbar. In der Vorschau ist der Abruf blockiert – auf deiner Domain (Vercel) lädt es.</div>';
+      if(ce) ce.innerHTML='<div class="h">WM-Stand · Konstrukteure</div><div class="f1-load">Nicht verfügbar.</div>';
+      return;
+    }
+    if(de){
+      var dh='<div class="h">WM-Stand · Fahrer'+(data.ts?' <span class="f1-upd">Stand '+new Date(data.ts).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+'</span>':'')+'</div>';
+      dh+=data.drivers.slice(0,10).map(function(d){
+        return '<div class="f1-st"><div class="f1-pos">'+d.pos+'</div>'
+          +'<div class="f1-bar" style="background:'+teamColor(d.team)+'"></div>'
+          +'<div class="f1-stinfo"><div class="f1-stname">'+esc(d.name)+'</div><div class="f1-stteam">'+esc(d.team)+'</div></div>'
+          +'<div class="f1-pts">'+d.pts+'<span>Pkt</span></div></div>';
+      }).join('');
+      de.innerHTML=dh;
+    }
+    if(ce){
+      var ch='<div class="h">WM-Stand · Konstrukteure</div>';
+      ch+=data.cons.slice(0,10).map(function(c){
+        return '<div class="f1-st"><div class="f1-pos">'+c.pos+'</div>'
+          +'<div class="f1-bar" style="background:'+teamColor(c.name)+'"></div>'
+          +'<div class="f1-stinfo"><div class="f1-stname">'+esc(c.name)+'</div></div>'
+          +'<div class="f1-pts">'+c.pts+'<span>Pkt</span></div></div>';
+      }).join('');
+      ce.innerHTML=ch;
+    }
   }
 
   function renderWetter(){
