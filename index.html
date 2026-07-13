@@ -130,6 +130,25 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .pincancel{margin-top:26px;background:none;border:0;color:var(--text3);font:600 14px 'Inter';cursor:pointer;padding:8px 16px}
 .pinshake{animation:pinshake .4s}
 @keyframes pinshake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+/* ---------- Sync-Login ---------- */
+#synclock{position:fixed;inset:0;z-index:201;display:none;align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--bg,#0C120D) 84%,#000);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px))}
+#synclock.on{display:flex}
+.syncbox{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.syncsub{font-size:13px;color:var(--text2);margin:14px 0 18px;line-height:1.5}
+.syncinput{width:100%;box-sizing:border-box;padding:13px 15px;border-radius:14px;border:0.5px solid var(--border,rgba(255,255,255,.15));
+  background:var(--surf2,#1E2A1F);color:var(--text);font:600 15px 'Space Grotesk';text-align:center;letter-spacing:.5px;outline:none;margin-bottom:12px}
+.syncinput:focus{border-color:var(--teal,#8FD25C)}
+.syncbtn{width:100%;padding:13px;border-radius:14px;border:0;background:var(--teal,#8FD25C);color:#062012;font:700 15px 'Inter';cursor:pointer}
+.syncbtn:disabled{opacity:.6;cursor:default}
+.syncnote{font-size:12.5px;margin-top:12px;min-height:18px;line-height:1.4}
+.syncnote.err{color:var(--red,#FF7A7A)}.syncnote.ok{color:var(--teal,#8FD25C)}
+/* Sync-Badge im Dashboard/Settings */
+.sync-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text3)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
+.sync-dot.on{background:var(--teal,#8FD25C)}
+/* ---------- Sync-Login Ende ---------- */
 /* ---------- PIN-Sperre Ende ---------- */
 /* ---------- Wetter-Tab ---------- */
 #wetterwrap{max-width:920px;overflow-x:hidden}
@@ -489,6 +508,17 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
       <button class="pincancel" id="pin-cancel">Abbrechen</button>
     </div>
   </div>
+  <div id="synclock">
+    <div class="syncbox">
+      <div class="pinlogo"><span>N</span></div>
+      <div class="pintitle">Daten synchronisieren</div>
+      <div class="syncsub" id="sync-sub">Gib deinen geheimen Sync-Code ein. Auf jedem Gerät mit demselben Code hast du dieselben Daten.</div>
+      <input class="syncinput" id="sync-code" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="z. B. nils-lifeos-7392" maxlength="60">
+      <button class="syncbtn" id="sync-go">Verbinden & Laden</button>
+      <div class="syncnote" id="sync-note"></div>
+      <button class="pincancel" id="sync-cancel">Später</button>
+    </div>
+  </div>
   <nav id="rail">
     <div id="brand"><div class="mono"><span>N</span></div><div><div class="t">LifeOS</div><div class="s">Naxii · Personal OS</div></div></div>
     <div id="railnav"></div>
@@ -614,6 +644,12 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
           <div class="srow" id="set-partner-clear-row" style="display:none"><button class="qbtn" id="set-partner-clear">Entfernen</button></div>
         </div>
         <div class="card">
+          <div class="ttl">Geräte-Sync</div>
+          <div class="note"><span class="sync-badge"><span class="sync-dot"></span><span class="sync-label">Nicht verbunden</span></span></div>
+          <div class="note" id="sync-status">Melde dich mit einem geheimen Sync-Code an – auf jedem Gerät mit demselben Code hast du automatisch dieselben Daten (PC & Handy).</div>
+          <div class="srow" id="sync-actions"></div>
+        </div>
+        <div class="card">
           <div class="ttl">Finanzen-Sperre</div>
           <div class="note" id="pin-status">Schütze den Finanzen-Tab mit einer 4-stelligen PIN. Sie wird beim Öffnen der Finanzen abgefragt.</div>
           <div class="srow" id="pin-actions"></div>
@@ -682,6 +718,13 @@ var ICONS={
 };
 
 var LifeOS=(function(){
+  /* ===================== SUPABASE-SYNC-KONFIGURATION =====================
+     Trage hier die zwei Werte aus deinem Supabase-Projekt ein
+     (Project Settings -> API). Solange sie leer sind, ist der Sync deaktiviert
+     und LifeOS speichert nur lokal wie bisher. */
+  var SUPABASE_URL='https://avsamgrtvnkxgvdwzktd.supabase.co';       /* z. B. https://xxxx.supabase.co */
+  var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2c2FtZ3J0dm5reGd2ZHd6a3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5MjgzMzUsImV4cCI6MjA5OTUwNDMzNX0.tRkFcxJ3I0696c0YKSAVkViF6R8PjiCyXTUYAHGvQKM';  /* der öffentliche "anon"-Key */
+  /* ====================================================================== */
   var master={finanz:{},sprit:{},lifeos:{theme:'lifeos',name:'',notes:'',links:{},events:[],tasks:[],feierabend:'17:00',partner:null}};
   var saveT=null, storeMode='memory', clockT=null;
 
@@ -704,10 +747,68 @@ var LifeOS=(function(){
     clearTimeout(saveT);
     saveT=setTimeout(async function(){
       var s=JSON.stringify(master);
-      try{ if(storeMode==='cloud'&&window.storage){ await window.storage.set('lifeos-data',s); return; } }catch(e){}
+      try{ if(storeMode==='cloud'&&window.storage){ await window.storage.set('lifeos-data',s); } }catch(e){}
       try{ window.localStorage.setItem('lifeos-data',s); }catch(e){}
+      cloudPush(); /* zusätzlich in die Cloud (falls verbunden) */
     },350);
   }
+
+  /* =========================== Supabase-Sync =============================== */
+  var syncCode=null, syncBusy=false, cloudPushT=null, syncEnabled=false;
+  function syncActive(){ return !!(SUPABASE_URL && SUPABASE_ANON_KEY); }
+  function sbHeaders(){ return {'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'}; }
+  /* Tabelle: lifeos_data (code text primary key, data jsonb, updated_at timestamptz) */
+  async function cloudPull(code){
+    var u=SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/lifeos_data?code=eq.'+encodeURIComponent(code)+'&select=data,updated_at';
+    var r=await fetch(u,{headers:sbHeaders()});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    var arr=await r.json();
+    return (arr&&arr.length)?arr[0]:null;
+  }
+  async function cloudPush(){
+    if(!syncEnabled || !syncCode || !syncActive()) return;
+    clearTimeout(cloudPushT);
+    cloudPushT=setTimeout(async function(){
+      try{
+        var u=SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/lifeos_data?on_conflict=code';
+        await fetch(u,{method:'POST',headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
+          body:JSON.stringify({code:syncCode,data:master,updated_at:new Date().toISOString()})});
+        updateSyncBadge();
+      }catch(e){}
+    },600);
+  }
+  async function connectSync(code){
+    if(!syncActive()){ throw new Error('nicht konfiguriert'); }
+    var row=await cloudPull(code);
+    syncCode=code; syncEnabled=true;
+    try{ window.localStorage.setItem('lifeos-synccode',code); }catch(e){}
+    if(row && row.data){
+      /* Cloud-Daten übernehmen */
+      var cloud=row.data;
+      master.finanz=cloud.finanz||master.finanz;
+      master.sprit=cloud.sprit||master.sprit;
+      master.lifeos=Object.assign(master.lifeos, cloud.lifeos||{});
+      try{ window.localStorage.setItem('lifeos-data',JSON.stringify(master)); }catch(e){}
+      return 'loaded';
+    } else {
+      /* Noch keine Cloud-Daten -> aktuelle lokale Daten hochladen */
+      await cloudPushNow();
+      return 'created';
+    }
+  }
+  async function cloudPushNow(){
+    var u=SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/lifeos_data?on_conflict=code';
+    await fetch(u,{method:'POST',headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body:JSON.stringify({code:syncCode,data:master,updated_at:new Date().toISOString()})});
+  }
+  function disconnectSync(){ syncEnabled=false; syncCode=null; try{ window.localStorage.removeItem('lifeos-synccode'); }catch(e){} updateSyncBadge(); }
+  function updateSyncBadge(){
+    document.querySelectorAll('.sync-dot').forEach(function(d){ d.classList.toggle('on', syncEnabled); });
+    document.querySelectorAll('.sync-label').forEach(function(l){ l.textContent = syncEnabled?('Verbunden · '+(syncCode||'')):'Nicht verbunden'; });
+  }
+  function openSync(){ var o=document.getElementById('synclock'); if(o){ o.classList.add('on'); var i=document.getElementById('sync-code'); if(i){ i.value=syncCode||''; setTimeout(function(){i.focus();},100); } } }
+  function closeSync(){ var o=document.getElementById('synclock'); if(o) o.classList.remove('on'); }
+  /* ======================================================================== */
 
   /* ------------------------------ Module mounten --------------------------- */
   function seedJSON(obj){ return JSON.stringify(obj).replace(/</g,'\\u003c'); }
@@ -886,6 +987,26 @@ var LifeOS=(function(){
   function closePinLock(){ var pl=document.getElementById('pinlock'); pl.classList.remove('on'); pl.style.display='none'; pinBuf=''; }
 
   document.addEventListener('DOMContentLoaded',function(){ var c=document.getElementById('pin-cancel'); if(c) c.onclick=function(){ closePinLock(); pendingNav=null; if(current!=='finanz') go(current); else go('dashboard'); }; });
+  document.addEventListener('DOMContentLoaded',function(){
+    var go2=document.getElementById('sync-go'), code=document.getElementById('sync-code'),
+        note=document.getElementById('sync-note'), cancel=document.getElementById('sync-cancel');
+    function setNote(t,cls){ if(note){ note.textContent=t; note.className='syncnote'+(cls?' '+cls:''); } }
+    async function doConnect(){
+      var c=(code.value||'').trim().toLowerCase().replace(/\s+/g,'-');
+      if(c.length<4){ setNote('Bitte einen Code mit mind. 4 Zeichen wählen.','err'); return; }
+      if(!syncActive()){ setNote('Sync ist noch nicht konfiguriert (Supabase-Zugang fehlt in der Datei).','err'); return; }
+      go2.disabled=true; setNote('Verbinde …','');
+      try{
+        var res=await connectSync(c);
+        setNote(res==='loaded'?'✅ Daten geladen! Alles synchron.':'✅ Verbunden! Deine Daten sind jetzt in der Cloud.','ok');
+        updateSyncBadge();
+        setTimeout(function(){ closeSync(); location.reload(); },900);
+      }catch(e){ setNote('Verbindung fehlgeschlagen. Code prüfen bzw. Internet/Supabase-Zugang.','err'); go2.disabled=false; }
+    }
+    if(go2) go2.onclick=doConnect;
+    if(code) code.onkeydown=function(ev){ if(ev.key==='Enter') doConnect(); };
+    if(cancel) cancel.onclick=function(){ closeSync(); };
+  });
   function buildNav(){
     document.getElementById('railnav').innerHTML=NAV.map(function(m){ return '<div class="nitem" data-go="'+m.id+'">'+ICONS[m.ic]+'<span>'+m.n+'</span></div>'; }).join('');
     document.getElementById('dock').innerHTML=NAV.filter(function(m){return m.d}).map(function(m){ return '<div class="nitem" data-go="'+m.id+'">'+ICONS[m.ic]+'<span>'+m.n+'</span></div>'; }).join('');
@@ -1163,6 +1284,26 @@ var LifeOS=(function(){
       }
     };
     refreshPinUI();
+    /* --- Geräte-Sync UI --- */
+    window.refreshSyncUI=function(){
+      var act=document.getElementById('sync-actions'), st=document.getElementById('sync-status'); if(!act) return;
+      if(!syncActive()){
+        st.innerHTML='⚠️ Sync ist noch nicht eingerichtet. Trage in der LifeOS-Datei deine zwei Supabase-Werte ein (siehe Anleitung), dann erscheint hier der Verbinden-Button.';
+        act.innerHTML=''; updateSyncBadge(); return;
+      }
+      if(syncEnabled){
+        st.innerHTML='🔗 Deine Daten werden automatisch synchronisiert. Gib denselben Code auf einem anderen Gerät ein, um dort dieselben Daten zu sehen.';
+        act.innerHTML='<button class="qbtn" id="sync-open">Code anzeigen / wechseln</button><button class="qbtn" id="sync-off" style="color:var(--red,#FF7A7A);border-color:var(--red,#FF7A7A)">Sync trennen</button>';
+        document.getElementById('sync-open').onclick=function(){ openSync(); };
+        document.getElementById('sync-off').onclick=function(){ disconnectSync(); refreshSyncUI(); };
+      } else {
+        st.innerHTML='Melde dich mit einem geheimen Sync-Code an – auf jedem Gerät mit demselben Code hast du automatisch dieselben Daten (PC & Handy).';
+        act.innerHTML='<button class="qbtn" id="sync-connect">Mit Sync-Code verbinden</button>';
+        document.getElementById('sync-connect').onclick=function(){ openSync(); };
+      }
+      updateSyncBadge();
+    };
+    refreshSyncUI();
     document.getElementById('impfile').onchange=function(ev){
       var f=ev.target.files[0]; if(!f)return;
       var r=new FileReader();
@@ -2321,6 +2462,19 @@ var LifeOS=(function(){
     var loaded=await loadMaster();
     if(loaded){ master.finanz=loaded.finanz||{}; master.sprit=loaded.sprit||{};
       master.lifeos=Object.assign({theme:'lifeos',name:'',notes:'',links:{},events:[],tasks:[],feierabend:'17:00',partner:null},loaded.lifeos||{}); }
+    /* Geräte-Sync: gespeicherten Code automatisch wiederverwenden und Cloud-Daten holen */
+    try{
+      var savedCode=window.localStorage.getItem('lifeos-synccode');
+      if(savedCode && syncActive()){
+        var row=await cloudPull(savedCode);
+        syncCode=savedCode; syncEnabled=true;
+        if(row && row.data){
+          master.finanz=row.data.finanz||master.finanz;
+          master.sprit=row.data.sprit||master.sprit;
+          master.lifeos=Object.assign(master.lifeos, row.data.lifeos||{});
+        }
+      }
+    }catch(e){}
     ensureMods();
     applyTheme(master.lifeos.theme||'lifeos');
     buildNav(); renderMods(); bindSettings(); mountModules();
