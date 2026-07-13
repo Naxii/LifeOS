@@ -148,6 +148,9 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .sync-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text3)}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
 .sync-dot.on{background:var(--teal,#8FD25C)}
+.sync-dot.err{background:var(--red,#FF7A7A)!important}
+.sync-dot.syncing{background:var(--teal,#8FD25C)!important;animation:syncpulse 1s ease-in-out infinite}
+@keyframes syncpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
 /* ---------- Sync-Login Ende ---------- */
 /* ---------- PIN-Sperre Ende ---------- */
 /* ---------- Wetter-Tab ---------- */
@@ -754,7 +757,7 @@ var LifeOS=(function(){
   }
 
   /* =========================== Supabase-Sync =============================== */
-  var syncCode=null, syncBusy=false, cloudPushT=null, syncEnabled=false;
+  var syncCode=null, syncBusy=false, cloudPushT=null, syncEnabled=false, lastSyncTs=0, syncState='idle';
   function syncActive(){ return !!(SUPABASE_URL && SUPABASE_ANON_KEY); }
   function sbHeaders(){ return {'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'}; }
   /* Tabelle: lifeos_data (code text primary key, data jsonb, updated_at timestamptz) */
@@ -768,13 +771,17 @@ var LifeOS=(function(){
   async function cloudPush(){
     if(!syncEnabled || !syncCode || !syncActive()) return;
     clearTimeout(cloudPushT);
+    syncState='syncing'; updateSyncBadge();
     cloudPushT=setTimeout(async function(){
       try{
         var u=SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/lifeos_data?on_conflict=code';
-        await fetch(u,{method:'POST',headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
+        var r=await fetch(u,{method:'POST',headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
           body:JSON.stringify({code:syncCode,data:master,updated_at:new Date().toISOString()})});
-        updateSyncBadge();
-      }catch(e){}
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        lastSyncTs=Date.now(); syncState='ok';
+        try{ window.localStorage.setItem('lifeos-lastsync',String(lastSyncTs)); }catch(e){}
+      }catch(e){ syncState='err'; }
+      updateSyncBadge();
     },600);
   }
   async function connectSync(code){
@@ -789,10 +796,12 @@ var LifeOS=(function(){
       master.sprit=cloud.sprit||master.sprit;
       master.lifeos=Object.assign(master.lifeos, cloud.lifeos||{});
       try{ window.localStorage.setItem('lifeos-data',JSON.stringify(master)); }catch(e){}
+      lastSyncTs=Date.now(); syncState='ok'; try{ window.localStorage.setItem('lifeos-lastsync',String(lastSyncTs)); }catch(e){}
       return 'loaded';
     } else {
       /* Noch keine Cloud-Daten -> aktuelle lokale Daten hochladen */
       await cloudPushNow();
+      lastSyncTs=Date.now(); syncState='ok'; try{ window.localStorage.setItem('lifeos-lastsync',String(lastSyncTs)); }catch(e){}
       return 'created';
     }
   }
@@ -801,10 +810,31 @@ var LifeOS=(function(){
     await fetch(u,{method:'POST',headers:Object.assign(sbHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
       body:JSON.stringify({code:syncCode,data:master,updated_at:new Date().toISOString()})});
   }
-  function disconnectSync(){ syncEnabled=false; syncCode=null; try{ window.localStorage.removeItem('lifeos-synccode'); }catch(e){} updateSyncBadge(); }
+  function disconnectSync(){ syncEnabled=false; syncCode=null; syncState='idle'; lastSyncTs=0; try{ window.localStorage.removeItem('lifeos-synccode'); window.localStorage.removeItem('lifeos-lastsync'); }catch(e){} updateSyncBadge(); }
+  var syncTickT=null;
+  function startSyncTicker(){ stopSyncTicker(); syncTickT=setInterval(function(){ if(current==='settings') updateSyncBadge(); else stopSyncTicker(); },20000); }
+  function stopSyncTicker(){ if(syncTickT){ clearInterval(syncTickT); syncTickT=null; } }
+  function relTime(ts){
+    if(!ts) return '';
+    var s=Math.floor((Date.now()-ts)/1000);
+    if(s<10) return 'gerade eben';
+    if(s<60) return 'vor '+s+' Sek.';
+    var m=Math.floor(s/60); if(m<60) return 'vor '+m+' Min.';
+    var h=Math.floor(m/60); if(h<24) return 'vor '+h+' Std.';
+    var d=Math.floor(h/24); return 'vor '+d+' Tg.';
+  }
   function updateSyncBadge(){
-    document.querySelectorAll('.sync-dot').forEach(function(d){ d.classList.toggle('on', syncEnabled); });
-    document.querySelectorAll('.sync-label').forEach(function(l){ l.textContent = syncEnabled?('Verbunden · '+(syncCode||'')):'Nicht verbunden'; });
+    document.querySelectorAll('.sync-dot').forEach(function(d){
+      d.classList.toggle('on', syncEnabled && syncState!=='err');
+      d.classList.toggle('err', syncEnabled && syncState==='err');
+      d.classList.toggle('syncing', syncEnabled && syncState==='syncing');
+    });
+    document.querySelectorAll('.sync-label').forEach(function(l){
+      if(!syncEnabled){ l.textContent='Nicht verbunden'; return; }
+      if(syncState==='syncing'){ l.textContent='Synchronisiert …'; return; }
+      if(syncState==='err'){ l.textContent='Sync-Fehler – erneut versuchen'; return; }
+      l.textContent = lastSyncTs ? ('Synchron · '+relTime(lastSyncTs)) : ('Verbunden · '+(syncCode||''));
+    });
   }
   function openSync(){ var o=document.getElementById('synclock'); if(o){ o.classList.add('on'); var i=document.getElementById('sync-code'); if(i){ i.value=syncCode||''; setTimeout(function(){i.focus();},100); } } }
   function closeSync(){ var o=document.getElementById('synclock'); if(o) o.classList.remove('on'); }
@@ -911,6 +941,7 @@ var LifeOS=(function(){
     if(id==='aufgaben') renderTasks();
     if(id==='wetter'){ renderWetter(); loadWeather(true); }
     if(id==='f1') renderF1();
+    if(id==='settings'){ if(typeof updateSyncBadge==='function') updateSyncBadge(); startSyncTicker(); } else stopSyncTicker();
     if(id==='sprit'&&fzgTab==='wart') renderWart();
     if(id==='edu') renderEdu();
     if(id==='health') renderHealth();
@@ -2473,6 +2504,8 @@ var LifeOS=(function(){
           master.sprit=row.data.sprit||master.sprit;
           master.lifeos=Object.assign(master.lifeos, row.data.lifeos||{});
         }
+        lastSyncTs=Date.now(); syncState='ok';
+        try{ window.localStorage.setItem('lifeos-lastsync',String(lastSyncTs)); }catch(e){}
       }
     }catch(e){}
     ensureMods();
