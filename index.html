@@ -194,6 +194,37 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .wx-empty .bico{font-size:44px;margin-bottom:12px}
 .wx-reload{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:10px 16px;border-radius:13px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1E2A1F);color:var(--text);font:600 13px 'Inter';cursor:pointer}
 @media(max-width:520px){.wx-metrics{grid-template-columns:repeat(2,1fr)}}
+/* ---------- News ---------- */
+#newswrap{max-width:820px}
+.news-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.news-title{font-family:'Space Grotesk';font-weight:700;font-size:clamp(20px,5vw,26px)}
+.news-live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--text3)}
+.news-live .dot{width:8px;height:8px;border-radius:50%;background:var(--teal,#8FD25C);animation:newspulse 1.6s ease-in-out infinite}
+@keyframes newspulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.news-refresh{background:color-mix(in srgb,var(--surface,#161F17) 70%,transparent);border:0.5px solid var(--border,rgba(255,255,255,.1));color:var(--text2);border-radius:11px;padding:8px 12px;font:600 12.5px 'Inter';cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.news-refresh:active{transform:scale(.96)}
+.news-seg{display:flex;gap:4px;background:color-mix(in srgb,var(--surface,#161F17) 70%,transparent);border:0.5px solid var(--border,rgba(255,255,255,.08));border-radius:14px;padding:4px;margin-bottom:16px}
+.news-segbtn{flex:1;border:0;border-radius:10px;padding:10px 8px;background:none;color:var(--text2);font:600 13.5px 'Inter';cursor:pointer;transition:.15s}
+.news-segbtn.on{background:var(--teal,#8FD25C);color:#062012}
+.news-list{display:flex;flex-direction:column;gap:2px}
+.news-item{display:block;text-decoration:none;color:inherit;padding:14px 14px;border-radius:14px;transition:background .15s;position:relative}
+.news-item:hover{background:color-mix(in srgb,var(--surface,#161F17) 55%,transparent)}
+.news-item+.news-item{border-top:0.5px solid var(--border,rgba(255,255,255,.05))}
+.news-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.news-src{font-size:10.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:color-mix(in srgb,var(--teal,#8FD25C) 18%,transparent);color:var(--teal,#8FD25C)}
+.news-src.f1{background:color-mix(in srgb,#E10600 20%,transparent);color:#FF5B54}
+.news-time{font-size:11.5px;color:var(--text3)}
+.news-h{font-weight:600;font-size:15px;line-height:1.35}
+.news-item:hover .news-h{color:var(--teal,#8FD25C)}
+.news-empty{text-align:center;color:var(--text3);font-size:13.5px;padding:40px 20px;line-height:1.6}
+.news-skel{height:64px;border-radius:14px;margin-bottom:2px;background:linear-gradient(90deg,color-mix(in srgb,var(--surface,#161F17) 50%,transparent) 25%,color-mix(in srgb,var(--surface,#161F17) 75%,transparent) 50%,color-mix(in srgb,var(--surface,#161F17) 50%,transparent) 75%);background-size:200% 100%;animation:newsskel 1.3s linear infinite}
+@keyframes newsskel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* Dashboard-Widget */
+#dash-news-card .newsw-item{display:block;padding:8px 0;text-decoration:none;color:inherit}
+#dash-news-card .newsw-item+.newsw-item{border-top:0.5px solid var(--border,rgba(255,255,255,.06))}
+#dash-news-card .newsw-src{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--teal,#8FD25C);letter-spacing:.3px}
+#dash-news-card .newsw-h{font-size:13px;font-weight:600;line-height:1.3;margin-top:2px}
+/* ---------- News Ende ---------- */
 /* ---------- Formel 1 ---------- */
 #f1wrap{max-width:920px}
 .f1-hero{border-radius:24px;padding:20px 20px 18px;margin-bottom:14px;position:relative;overflow:hidden;
@@ -607,6 +638,9 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
     <section class="view" id="view-f1">
       <div id="f1wrap"></div>
     </section>
+    <section class="view" id="view-news">
+      <div id="newswrap"></div>
+    </section>
     <!-- Weitere Module -->
     <section class="view" id="view-module">
       <div class="h1">Weitere Module</div>
@@ -717,7 +751,8 @@ var ICONS={
   target:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>',
   pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4L8 20l-5 1 1-5L17 3z"/></svg>',
   weather:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3.2"/><path d="M8 1.5v1.5M8 15v1.5M1.5 9H3M13 9h1.5M3.6 4.6l1 1M11.4 4.6l-1 1"/><path d="M12.5 15a4 4 0 0 1 .3-8 5 5 0 0 1 9.2 2.5 3.5 3.5 0 0 1-.5 6.9H12.5z"/></svg>',
-  f1:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h6l2-2h5l3 2M3 13v3h2a2 2 0 0 0 4 0h6a2 2 0 0 0 4 0h1v-3M3 13l1.5-3.5A2 2 0 0 1 6.3 8H12"/><circle cx="7" cy="16" r="1.5"/><circle cx="17" cy="16" r="1.5"/></svg>'
+  f1:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h6l2-2h5l3 2M3 13v3h2a2 2 0 0 0 4 0h6a2 2 0 0 0 4 0h1v-3M3 13l1.5-3.5A2 2 0 0 1 6.3 8H12"/><circle cx="7" cy="16" r="1.5"/><circle cx="17" cy="16" r="1.5"/></svg>',
+  news:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5z"/><path d="M17 8h3v10a2 2 0 0 1-2 2"/><path d="M7 8h7M7 11h7M7 14h4"/></svg>'
 };
 
 var LifeOS=(function(){
@@ -922,6 +957,7 @@ var LifeOS=(function(){
     {id:'aufgaben',n:'Aufgaben',ic:'task',d:0},
     {id:'wetter',n:'Wetter',ic:'weather',d:0},
     {id:'f1',n:'Formel 1',ic:'f1',d:0},
+    {id:'news',n:'News',ic:'news',d:0},
     {id:'module',n:'Module',ic:'mods',d:1},
     {id:'settings',n:'Einstellungen',ic:'gear',d:0}
   ];
@@ -941,6 +977,7 @@ var LifeOS=(function(){
     if(id==='aufgaben') renderTasks();
     if(id==='wetter'){ renderWetter(); loadWeather(true); }
     if(id==='f1') renderF1();
+    if(id==='news') renderNews();
     if(id==='settings'){ if(typeof updateSyncBadge==='function') updateSyncBadge(); startSyncTicker(); } else stopSyncTicker();
     if(id==='sprit'&&fzgTab==='wart') renderWart();
     if(id==='edu') renderEdu();
@@ -2071,6 +2108,92 @@ var LifeOS=(function(){
     var d=new Date(dstr+'T00:00');
     return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.';
   }
+  /* ------------------------------ News ------------------------------------- */
+  var newsCat='all', newsData=null, newsBusy=false, newsErr=false, newsUpd=0;
+  function newsRelTime(ts){
+    if(!ts) return '';
+    var s=Math.floor((Date.now()-ts)/1000);
+    if(s<60) return 'gerade eben';
+    var m=Math.floor(s/60); if(m<60) return 'vor '+m+' Min.';
+    var h=Math.floor(m/60); if(h<24) return 'vor '+h+' Std.';
+    var d=Math.floor(h/24); return 'vor '+d+' Tg.';
+  }
+  function renderNews(){
+    var w=document.getElementById('newswrap'); if(!w) return;
+    var updTxt = newsUpd ? ('Aktualisiert '+newsRelTime(newsUpd)) : 'Live-Nachrichten';
+    var h='<div class="news-head"><div class="news-title">News</div>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<span class="news-live"><span class="dot"></span>'+esc(updTxt)+'</span>'
+      +'<button class="news-refresh" id="news-refresh">↻ Aktualisieren</button></div></div>';
+    h+='<div class="news-seg">'
+      +'<button class="news-segbtn'+(newsCat==='all'?' on':'')+'" data-nc="all">Alle</button>'
+      +'<button class="news-segbtn'+(newsCat==='f1'?' on':'')+'" data-nc="f1">Formel 1</button>'
+      +'<button class="news-segbtn'+(newsCat==='tech'?' on':'')+'" data-nc="tech">Tech</button></div>';
+    h+='<div class="news-list" id="news-list"></div>';
+    w.innerHTML=h;
+    document.getElementById('news-refresh').onclick=function(){ loadNews(true); };
+    w.querySelectorAll('[data-nc]').forEach(function(b){ b.onclick=function(){ newsCat=b.getAttribute('data-nc'); newsData=null; renderNews(); }; });
+    paintNews();
+    loadNews(false);
+  }
+  function paintNews(){
+    var list=document.getElementById('news-list'); if(!list) return;
+    if(newsBusy && !newsData){
+      list.innerHTML='<div class="news-skel"></div><div class="news-skel"></div><div class="news-skel"></div><div class="news-skel"></div><div class="news-skel"></div>';
+      return;
+    }
+    if(newsErr && !newsData){
+      list.innerHTML='<div class="news-empty">Nachrichten konnten nicht geladen werden.<br>In der Vorschau ist der Abruf blockiert – auf deiner Domain (Vercel mit <b>/api/news.js</b>) lädt es.</div>';
+      return;
+    }
+    var items=(newsData||[]).filter(function(it){
+      if(newsCat==='f1') return it.cat==='f1';
+      if(newsCat==='tech') return it.cat==='tech';
+      return true;
+    });
+    if(!items.length){ list.innerHTML='<div class="news-empty">Keine Meldungen vorhanden.</div>'; return; }
+    list.innerHTML=items.slice(0,40).map(function(it){
+      var isF1=(it.cat==='f1');
+      return '<a class="news-item" href="'+esc(it.link)+'" target="_blank" rel="noopener">'
+        +'<div class="news-meta"><span class="news-src'+(isF1?' f1':'')+'">'+esc(it.src)+'</span>'
+        +'<span class="news-time">'+esc(newsRelTime(it.ts))+'</span></div>'
+        +'<div class="news-h">'+esc(it.title)+'</div></a>';
+    }).join('');
+  }
+  /* Kategorie eines Items anhand der Quelle bestimmen */
+  function newsSrcCat(src){
+    var s=(src||'').toLowerCase();
+    if(s.indexOf('motorsport')>=0) return 'f1';
+    return 'tech';
+  }
+  async function loadNews(force){
+    /* Cache 5 Min */
+    var cache=master.lifeos.newsCache;
+    if(!force && cache && (Date.now()-cache.ts)<300000){
+      newsData=cache.items; newsUpd=cache.ts; newsErr=false; paintNews(); updateNewsHead(); return;
+    }
+    if(newsBusy) return;
+    newsBusy=true; newsErr=false; paintNews();
+    try{
+      var r=await fetch('/api/news?cat=all');
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      var j=await r.json();
+      var items=(j.items||[]).map(function(it){ return {title:it.title, link:it.link, src:it.src, ts:it.ts||0, cat:newsSrcCat(it.src)}; });
+      if(!items.length) throw new Error('leer');
+      newsData=items; newsUpd=Date.now(); newsErr=false;
+      master.lifeos.newsCache={ts:newsUpd, items:items}; persist();
+    }catch(e){
+      newsErr=true;
+      if(cache){ newsData=cache.items; newsUpd=cache.ts; newsErr=false; }
+    }
+    newsBusy=false;
+    if(current==='news'){ paintNews(); updateNewsHead(); }
+  }
+  function updateNewsHead(){
+    var el=document.querySelector('#view-news .news-live'); if(!el) return;
+    el.innerHTML='<span class="dot"></span>'+esc(newsUpd?('Aktualisiert '+newsRelTime(newsUpd)):'Live-Nachrichten');
+  }
+
   var f1Sub='kalender';
   function renderF1(){
     var w=document.getElementById('f1wrap'); if(!w) return;
