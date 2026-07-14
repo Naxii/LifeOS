@@ -194,6 +194,51 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .wx-empty .bico{font-size:44px;margin-bottom:12px}
 .wx-reload{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:10px 16px;border-radius:13px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1E2A1F);color:var(--text);font:600 13px 'Inter';cursor:pointer}
 @media(max-width:520px){.wx-metrics{grid-template-columns:repeat(2,1fr)}}
+/* ---------- Doku-Tresor ---------- */
+#tresorwrap{max-width:820px}
+.tr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.tr-title{font-family:'Space Grotesk';font-weight:700;font-size:clamp(20px,5vw,26px);display:flex;align-items:center;gap:10px}
+.tr-sub{font-size:12.5px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.tr-add{background:var(--teal,#8FD25C);color:#062012;border:0;border-radius:12px;padding:10px 15px;font:700 13.5px 'Inter';cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.tr-add:active{transform:scale(.96)}
+.tr-cat{margin-bottom:20px}
+.tr-cat-h{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin:0 2px 8px;display:flex;align-items:center;gap:7px}
+.tr-card{background:color-mix(in srgb,var(--surface,#161F17) 80%,transparent);border:0.5px solid var(--border,rgba(255,255,255,.08));border-radius:16px;padding:14px 15px;margin-bottom:8px}
+.tr-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.tr-card-name{font-weight:600;font-size:15px}
+.tr-card-actions{display:flex;gap:6px;flex-shrink:0}
+.tr-ico-btn{width:30px;height:30px;border-radius:8px;border:0.5px solid var(--border,rgba(255,255,255,.12));background:color-mix(in srgb,var(--surface,#161F17) 60%,transparent);color:var(--text2);cursor:pointer;display:grid;place-items:center;font-size:13px}
+.tr-ico-btn:active{transform:scale(.92)}
+.tr-fields{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.tr-field{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--bg,#0C120D) 40%,transparent)}
+.tr-field-label{font-size:11.5px;color:var(--text3);min-width:88px;flex-shrink:0}
+.tr-field-val{font-family:'Space Grotesk';font-weight:600;font-size:13.5px;flex:1;min-width:0;word-break:break-all;letter-spacing:.3px}
+.tr-field-val.hidden-val{letter-spacing:2px}
+.tr-field-btns{display:flex;gap:4px;flex-shrink:0}
+.tr-mini{width:26px;height:26px;border-radius:7px;border:0;background:color-mix(in srgb,var(--surface,#161F17) 70%,transparent);color:var(--text2);cursor:pointer;display:grid;place-items:center;font-size:12px}
+.tr-mini:active{transform:scale(.9)}
+.tr-note{font-size:12.5px;color:var(--text2);margin-top:8px;line-height:1.5;white-space:pre-wrap}
+.tr-empty{text-align:center;color:var(--text3);font-size:13.5px;padding:44px 20px;line-height:1.7}
+.tr-copied{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--teal,#8FD25C);color:#062012;font:700 13px 'Inter';padding:10px 18px;border-radius:99px;z-index:190;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;transition:opacity .2s}
+.tr-copied.on{opacity:1}
+/* Tresor-Editor-Modal nutzt die vorhandene .osmodal-Struktur */
+.tr-frow{display:flex;gap:8px;margin-bottom:8px}
+.tr-frow input{flex:1}
+.tr-frow .tr-mini{width:38px;height:auto}
+.tr-uprow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.tr-upstatus{font-size:12px;color:var(--text3)}
+.tr-upstatus.ok{color:var(--teal,#8FD25C)}.tr-upstatus.err{color:var(--red,#FF7A7A)}
+.tr-doc-empty{font-size:12px;color:var(--text3);padding:6px 2px}
+.tr-doc{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--bg,#0C120D) 40%,transparent);margin-bottom:6px}
+.tr-doc-ic{font-size:16px;flex-shrink:0}
+.tr-doc-name{flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr-doc-size{font-size:11px;color:var(--text3);flex-shrink:0}
+.tr-doc-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.tr-doc-chip{display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:12px;font-weight:500;
+  color:var(--text);background:color-mix(in srgb,var(--teal,#8FD25C) 14%,transparent);border:0.5px solid color-mix(in srgb,var(--teal,#8FD25C) 40%,transparent);
+  padding:6px 11px;border-radius:99px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr-doc-chip:active{transform:scale(.97)}
+/* ---------- Doku-Tresor Ende ---------- */
 /* ---------- News ---------- */
 #newswrap{max-width:820px}
 .news-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
@@ -641,6 +686,9 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
     <section class="view" id="view-news">
       <div id="newswrap"></div>
     </section>
+    <section class="view" id="view-tresor">
+      <div id="tresorwrap"></div>
+    </section>
     <!-- Weitere Module -->
     <section class="view" id="view-module">
       <div class="h1">Weitere Module</div>
@@ -752,7 +800,8 @@ var ICONS={
   pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4L8 20l-5 1 1-5L17 3z"/></svg>',
   weather:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3.2"/><path d="M8 1.5v1.5M8 15v1.5M1.5 9H3M13 9h1.5M3.6 4.6l1 1M11.4 4.6l-1 1"/><path d="M12.5 15a4 4 0 0 1 .3-8 5 5 0 0 1 9.2 2.5 3.5 3.5 0 0 1-.5 6.9H12.5z"/></svg>',
   f1:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h6l2-2h5l3 2M3 13v3h2a2 2 0 0 0 4 0h6a2 2 0 0 0 4 0h1v-3M3 13l1.5-3.5A2 2 0 0 1 6.3 8H12"/><circle cx="7" cy="16" r="1.5"/><circle cx="17" cy="16" r="1.5"/></svg>',
-  news:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5z"/><path d="M17 8h3v10a2 2 0 0 1-2 2"/><path d="M7 8h7M7 11h7M7 14h4"/></svg>'
+  news:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5z"/><path d="M17 8h3v10a2 2 0 0 1-2 2"/><path d="M7 8h7M7 11h7M7 14h4"/></svg>',
+  vault:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="13" cy="12" r="3.2"/><path d="M13 8.8v.8M13 15.6v-.8M9.8 12h.8M15.6 12h-.8M6.5 19.5v1M17.5 19.5v1"/></svg>'
 };
 
 var LifeOS=(function(){
@@ -763,7 +812,7 @@ var LifeOS=(function(){
   var SUPABASE_URL='https://avsamgrtvnkxgvdwzktd.supabase.co';       /* z. B. https://xxxx.supabase.co */
   var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2c2FtZ3J0dm5reGd2ZHd6a3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5MjgzMzUsImV4cCI6MjA5OTUwNDMzNX0.tRkFcxJ3I0696c0YKSAVkViF6R8PjiCyXTUYAHGvQKM';  /* der öffentliche "anon"-Key */
   /* ====================================================================== */
-  var master={finanz:{},sprit:{},lifeos:{theme:'lifeos',name:'',notes:'',links:{},events:[],tasks:[],feierabend:'17:00',partner:null}};
+  var master={finanz:{},sprit:{},lifeos:{theme:'lifeos',name:'',notes:'',links:{},events:[],tasks:[],feierabend:'17:00',partner:null,tresor:[]}};
   var saveT=null, storeMode='memory', clockT=null;
 
   /* -------- Persistenz-Adapter: window.storage -> localStorage -> Memory --- */
@@ -795,6 +844,38 @@ var LifeOS=(function(){
   var syncCode=null, syncBusy=false, cloudPushT=null, syncEnabled=false, lastSyncTs=0, syncState='idle';
   function syncActive(){ return !!(SUPABASE_URL && SUPABASE_ANON_KEY); }
   function sbHeaders(){ return {'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'}; }
+
+  /* ===================== Supabase Storage (Dokumente) =====================
+     Bucket 'tresor' (öffentlich lesbar per Link). Upload via REST.
+     Dateien werden unter <syncCode>/<zufalls-id>.<ext> abgelegt, damit sie
+     pro Sync-Code getrennt sind. */
+  var STORAGE_BUCKET='tresor';
+  function storageActive(){ return syncActive() && !!syncCode; }
+  function slugName(name){ return (name||'datei').toLowerCase().replace(/[^a-z0-9.\-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50); }
+  async function uploadDoc(file){
+    if(!syncActive()) throw new Error('Sync nicht konfiguriert');
+    if(!syncCode) throw new Error('Kein Sync-Code – bitte erst unter Einstellungen › Geräte-Sync verbinden.');
+    var ext=(file.name.split('.').pop()||'dat').toLowerCase();
+    var path=encodeURIComponent(syncCode)+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'-'+slugName(file.name);
+    var u=SUPABASE_URL.replace(/\/$/,'')+'/storage/v1/object/'+STORAGE_BUCKET+'/'+path;
+    var r=await fetch(u,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},body:file});
+    if(!r.ok){ var t=await r.text().catch(function(){return '';}); throw new Error('Upload fehlgeschlagen ('+r.status+') '+t.slice(0,120)); }
+    var publicUrl=SUPABASE_URL.replace(/\/$/,'')+'/storage/v1/object/public/'+STORAGE_BUCKET+'/'+path;
+    return {name:file.name, path:path, url:publicUrl, size:file.size, type:file.type, ts:Date.now()};
+  }
+  async function deleteDoc(path){
+    if(!syncActive()) return;
+    var u=SUPABASE_URL.replace(/\/$/,'')+'/storage/v1/object/'+STORAGE_BUCKET+'/'+path;
+    try{ await fetch(u,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}}); }catch(e){}
+  }
+  function fmtSize(b){ if(!b) return ''; if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(0)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
+  function docIcon(type,name){
+    var t=(type||'')+' '+(name||'');
+    if(/pdf/i.test(t)) return '📄';
+    if(/(png|jpe?g|gif|webp|heic|image)/i.test(t)) return '🖼️';
+    return '📎';
+  }
+  /* ======================================================================== */
   /* Tabelle: lifeos_data (code text primary key, data jsonb, updated_at timestamptz) */
   async function cloudPull(code){
     var u=SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/lifeos_data?code=eq.'+encodeURIComponent(code)+'&select=data,updated_at';
@@ -958,16 +1039,19 @@ var LifeOS=(function(){
     {id:'wetter',n:'Wetter',ic:'weather',d:0},
     {id:'f1',n:'Formel 1',ic:'f1',d:0},
     {id:'news',n:'News',ic:'news',d:0},
+    {id:'tresor',n:'Tresor',ic:'vault',d:0},
     {id:'module',n:'Module',ic:'mods',d:1},
     {id:'settings',n:'Einstellungen',ic:'gear',d:0}
   ];
   var current='dashboard';
   function go(id){
-    /* Beim Verlassen der Finanzen wieder sperren, damit die PIN erneut abgefragt wird */
-    if(current==='finanz' && id!=='finanz' && master.lifeos.finPin){ finUnlocked=false; }
-    /* PIN-Gate: Finanzen nur nach Entsperrung (falls PIN gesetzt) */
-    if(id==='finanz' && master.lifeos.finPin && !finUnlocked){
-      pendingNav='finanz'; openPinLock(); return;
+    /* Geschützte Tabs (Finanzen + Doku-Tresor) teilen sich die PIN-Sperre.
+       Beim Verlassen eines geschützten Tabs in einen ungeschützten wieder sperren. */
+    var PROTECTED=['finanz','tresor'];
+    if(PROTECTED.indexOf(current)>=0 && PROTECTED.indexOf(id)<0 && master.lifeos.finPin){ finUnlocked=false; }
+    /* PIN-Gate: geschützte Tabs nur nach Entsperrung (falls PIN gesetzt) */
+    if(PROTECTED.indexOf(id)>=0 && master.lifeos.finPin && !finUnlocked){
+      pendingNav=id; openPinLock(); return;
     }
     current=id;
     document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('on', v.id==='view-'+id); });
@@ -978,6 +1062,7 @@ var LifeOS=(function(){
     if(id==='wetter'){ renderWetter(); loadWeather(true); }
     if(id==='f1') renderF1();
     if(id==='news') renderNews();
+    if(id==='tresor') renderTresor();
     if(id==='settings'){ if(typeof updateSyncBadge==='function') updateSyncBadge(); startSyncTicker(); } else stopSyncTicker();
     if(id==='sprit'&&fzgTab==='wart') renderWart();
     if(id==='edu') renderEdu();
@@ -1037,7 +1122,7 @@ var LifeOS=(function(){
   function openPinLock(){
     pinMode='check'; pinBuf=''; pinFirst='';
     var t=document.getElementById('pin-title'), sub=document.getElementById('pin-sub');
-    if(t) t.textContent='Finanzen gesperrt'; if(sub){ sub.textContent='PIN eingeben'; sub.style.color=''; }
+    if(t) t.textContent=(pendingNav==='tresor'?'Tresor gesperrt':'Finanzen gesperrt'); if(sub){ sub.textContent='PIN eingeben'; sub.style.color=''; }
     buildPinPad(); renderPinDots();
     var lg=document.querySelector('.pinlogo');
     if(lg && appIconSrc){ lg.innerHTML='<img src="'+appIconSrc+'" alt="">'; }
@@ -2118,6 +2203,226 @@ var LifeOS=(function(){
     var h=Math.floor(m/60); if(h<24) return 'vor '+h+' Std.';
     var d=Math.floor(h/24); return 'vor '+d+' Tg.';
   }
+  /* ------------------------------ Doku-Tresor ------------------------------ */
+  var TR_CATS=[
+    {id:'passwoerter',n:'Passwörter',ic:'🔐'},
+    {id:'kfz',n:'Fahrzeuge',ic:'🚗'},
+    {id:'versicherung',n:'Versicherungen',ic:'🛡️'},
+    {id:'konto',n:'Konten & Kunden-Nr.',ic:'🏦'},
+    {id:'digital',n:'WLAN & Zugänge',ic:'🔑'},
+    {id:'sonstiges',n:'Sonstiges',ic:'📄'}
+  ];
+  /* Passwort-Generator */
+  function genPassword(len){
+    len=len||16;
+    var lower='abcdefghijkmnopqrstuvwxyz', upper='ABCDEFGHJKLMNPQRSTUVWXYZ', nums='23456789', sym='!@#$%&*?-_=+';
+    var all=lower+upper+nums+sym, out='';
+    var arr=(window.crypto&&window.crypto.getRandomValues)?window.crypto.getRandomValues(new Uint32Array(len)):null;
+    for(var i=0;i<len;i++){ var r=arr?arr[i]:Math.floor(Math.random()*4294967296); out+=all[r%all.length]; }
+    /* sicherstellen dass je 1 aus jeder Klasse dabei ist */
+    function pick(set){ var r=arr?arr[0]:Math.floor(Math.random()*4294967296); return set[r%set.length]; }
+    out=pick(lower)+pick(upper)+pick(nums)+pick(sym)+out.slice(4);
+    return out;
+  }
+  function trList(){ if(!Array.isArray(master.lifeos.tresor)) master.lifeos.tresor=[]; return master.lifeos.tresor; }
+  function trCatName(id){ var c=TR_CATS.find(function(x){return x.id===id;}); return c?c:{id:'sonstiges',n:'Sonstiges',ic:'📄'}; }
+  function renderTresor(){
+    var w=document.getElementById('tresorwrap'); if(!w) return;
+    var items=trList();
+    var h='<div class="tr-head"><div class="tr-title">'+ICONS.vault+'Tresor</div>'
+      +'<button class="tr-add" id="tr-add">+ Eintrag</button></div>';
+    h+='<div class="tr-sub">🔒 Geschützt durch deine Finanzen-PIN. Tippe auf ein Feld-Symbol, um Werte auf-/zuzudecken oder zu kopieren.</div>';
+    if(!items.length){
+      h+='<div class="tr-empty">Noch keine Einträge.<br>Leg z. B. deine KFZ-Daten, Versicherungsnummern oder WLAN-Zugänge an.<br><br>Tipp: Mit „+ Eintrag" oben starten.</div>';
+    } else {
+      TR_CATS.forEach(function(cat){
+        var inCat=items.filter(function(it){ return (it.cat||'sonstiges')===cat.id; });
+        if(!inCat.length) return;
+        h+='<div class="tr-cat"><div class="tr-cat-h">'+cat.ic+' '+esc(cat.n)+'</div>';
+        inCat.forEach(function(it){ h+=trCardHtml(it); });
+        h+='</div>';
+      });
+    }
+    w.innerHTML=h;
+    document.getElementById('tr-add').onclick=function(){ openTrEditor(null); };
+    bindTrCards();
+  }
+  function trCardHtml(it){
+    var fields=(it.fields||[]).map(function(f,i){
+      var hidden=f.secret!==false; /* default: verdeckt */
+      var shown='••••••••';
+      return '<div class="tr-field" data-fid="'+i+'">'
+        +'<span class="tr-field-label">'+esc(f.label||'Feld')+'</span>'
+        +'<span class="tr-field-val'+(hidden?' hidden-val':'')+'" data-secret="'+(hidden?'1':'0')+'" data-real="'+esc(f.value||'')+'">'+(hidden?shown:esc(f.value||''))+'</span>'
+        +'<span class="tr-field-btns">'
+        +'<button class="tr-mini" data-act="toggle" title="Anzeigen/Verbergen">'+(hidden?'👁':'🙈')+'</button>'
+        +'<button class="tr-mini" data-act="copy" title="Kopieren">⧉</button>'
+        +'</span></div>';
+    }).join('');
+    var docs=(it.docs||[]).map(function(d){
+      return '<a class="tr-doc-chip" href="'+esc(d.url)+'" target="_blank" rel="noopener">'+docIcon(d.type,d.name)+' '+esc(d.name)+'</a>';
+    }).join('');
+    return '<div class="tr-card" data-id="'+esc(it.id)+'">'
+      +'<div class="tr-card-top"><div class="tr-card-name">'+esc(it.name||'Ohne Titel')+'</div>'
+      +'<div class="tr-card-actions">'
+      +'<button class="tr-ico-btn" data-act="edit" title="Bearbeiten">✎</button>'
+      +'<button class="tr-ico-btn" data-act="del" title="Löschen">🗑</button>'
+      +'</div></div>'
+      +(fields?'<div class="tr-fields">'+fields+'</div>':'')
+      +(it.note?'<div class="tr-note">'+esc(it.note)+'</div>':'')
+      +(docs?'<div class="tr-doc-chips">'+docs+'</div>':'')
+      +'</div>';
+  }
+  function bindTrCards(){
+    var w=document.getElementById('tresorwrap');
+    w.querySelectorAll('.tr-card').forEach(function(card){
+      var id=card.getAttribute('data-id');
+      card.querySelectorAll('.tr-ico-btn').forEach(function(b){
+        b.onclick=function(){
+          var act=b.getAttribute('data-act');
+          if(act==='edit'){ var it=trList().find(function(x){return x.id===id;}); openTrEditor(it); }
+          if(act==='del'){ if(confirm('Diesen Eintrag löschen?')){ master.lifeos.tresor=trList().filter(function(x){return x.id!==id;}); persist(); renderTresor(); } }
+        };
+      });
+      card.querySelectorAll('.tr-field').forEach(function(fld){
+        fld.querySelectorAll('.tr-mini').forEach(function(b){
+          b.onclick=function(){
+            var val=fld.querySelector('.tr-field-val');
+            var real=val.getAttribute('data-real');
+            var act=b.getAttribute('data-act');
+            if(act==='toggle'){
+              var sec=val.getAttribute('data-secret')==='1';
+              if(sec){ val.textContent=real; val.classList.remove('hidden-val'); val.setAttribute('data-secret','0'); b.textContent='🙈'; }
+              else{ val.textContent='••••••••'; val.classList.add('hidden-val'); val.setAttribute('data-secret','1'); b.textContent='👁'; }
+            }
+            if(act==='copy'){ trCopy(real); }
+          };
+        });
+      });
+    });
+  }
+  function trCopy(txt){
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); }
+      else{ var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+      trToast('Kopiert');
+    }catch(e){ trToast('Kopieren nicht möglich'); }
+  }
+  var trToastEl=null, trToastT=null;
+  function trToast(msg){
+    if(!trToastEl){ trToastEl=document.createElement('div'); trToastEl.className='tr-copied'; document.body.appendChild(trToastEl); }
+    trToastEl.textContent=msg; trToastEl.classList.add('on');
+    clearTimeout(trToastT); trToastT=setTimeout(function(){ trToastEl.classList.remove('on'); },1400);
+  }
+  /* --- Editor (nutzt vorhandenes #osmodal) --- */
+  function openTrEditor(it){
+    var isNew=!it;
+    var data=it?JSON.parse(JSON.stringify(it)):{id:'tr'+Date.now(),name:'',cat:'kfz',fields:[{label:'',value:'',secret:true}],note:'',docs:[]};
+    if(!Array.isArray(data.docs)) data.docs=[];
+    if(!data.fields||!data.fields.length) data.fields=[{label:'',value:'',secret:true}];
+    var catOpts=TR_CATS.map(function(c){ return '<option value="'+c.id+'"'+(data.cat===c.id?' selected':'')+'>'+c.ic+' '+esc(c.n)+'</option>'; }).join('');
+    function fieldRows(){
+      return data.fields.map(function(f,i){
+        return '<div class="tr-frow" data-i="'+i+'">'
+          +'<input type="text" class="tr-flabel" placeholder="Bezeichnung (z. B. E-Mail, Passwort)" value="'+esc(f.label||'')+'">'
+          +'<input type="text" class="tr-fvalue" placeholder="Wert" value="'+esc(f.value||'')+'">'
+          +'<button class="tr-mini tr-fgen" title="Passwort generieren">🎲</button>'
+          +'<button class="tr-mini tr-fdel" title="Feld entfernen">✕</button></div>';
+      }).join('');
+    }
+    var body='<label class="fl">Titel</label><input type="text" id="tr-e-name" placeholder="z. B. Citroën C3 Aircross" value="'+esc(data.name||'')+'">'
+      +'<label class="fl">Kategorie</label><select id="tr-e-cat">'+catOpts+'</select>'
+      +'<label class="fl">Felder</label><div id="tr-e-fields">'+fieldRows()+'</div>'
+      +'<button class="qbtn" id="tr-e-addfield" style="margin-top:4px">+ Feld</button>'
+      +'<label class="fl" style="margin-top:12px">Notiz (optional)</label><textarea id="tr-e-note" rows="2" placeholder="Zusätzliche Infos …">'+esc(data.note||'')+'</textarea>'
+      +'<label class="fl" style="margin-top:12px">Dokumente (gescannte Verträge, PDFs, Fotos)</label>'
+      +'<div id="tr-e-docs"></div>'
+      +'<div class="tr-uprow"><input type="file" id="tr-e-file" accept="application/pdf,image/*" multiple style="display:none">'
+      +'<button class="qbtn" id="tr-e-upload">📎 Dokument hinzufügen</button>'
+      +'<span class="tr-upstatus" id="tr-e-upstatus"></span></div>';
+    openM(isNew?'Neuer Eintrag':'Eintrag bearbeiten', body, [
+      {label:'Abbrechen', cls:'ghost'},
+      {label:'Speichern', cls:'prim', fn:function(){
+        data.name=document.getElementById('tr-e-name').value.trim();
+        data.cat=document.getElementById('tr-e-cat').value;
+        data.note=document.getElementById('tr-e-note').value.trim();
+        var rows=document.querySelectorAll('#tr-e-fields .tr-frow');
+        var fields=[];
+        rows.forEach(function(r){
+          var l=r.querySelector('.tr-flabel').value.trim();
+          var v=r.querySelector('.tr-fvalue').value.trim();
+          if(l||v) fields.push({label:l||'Feld', value:v, secret:true});
+        });
+        data.fields=fields;
+        if(!data.name && !fields.length){ return false; }
+        var list=trList();
+        var idx=list.findIndex(function(x){return x.id===data.id;});
+        if(idx>=0) list[idx]=data; else list.push(data);
+        master.lifeos.tresor=list; persist(); renderTresor();
+      }}
+    ]);
+    /* Felder-Buttons nach dem Öffnen verdrahten */
+    setTimeout(function(){
+      function rebind(){
+        document.querySelectorAll('#tr-e-fields .tr-fdel').forEach(function(b){
+          b.onclick=function(){ var i=+b.closest('.tr-frow').getAttribute('data-i');
+            /* aktuelle Werte einlesen bevor neu gerendert wird */
+            syncFieldsFromDom(); data.fields.splice(i,1); if(!data.fields.length)data.fields=[{label:'',value:'',secret:true}];
+            document.getElementById('tr-e-fields').innerHTML=fieldRows(); rebind(); };
+        });
+        document.querySelectorAll('#tr-e-fields .tr-fgen').forEach(function(b){
+          b.onclick=function(){ var row=b.closest('.tr-frow'); var inp=row.querySelector('.tr-fvalue');
+            inp.value=genPassword(16);
+            var lbl=row.querySelector('.tr-flabel'); if(!lbl.value.trim()) lbl.value='Passwort';
+          };
+        });
+      }
+      function syncFieldsFromDom(){
+        var rows=document.querySelectorAll('#tr-e-fields .tr-frow'); var fs=[];
+        rows.forEach(function(r){ fs.push({label:r.querySelector('.tr-flabel').value, value:r.querySelector('.tr-fvalue').value, secret:true}); });
+        data.fields=fs.length?fs:[{label:'',value:'',secret:true}];
+      }
+      var addBtn=document.getElementById('tr-e-addfield');
+      if(addBtn) addBtn.onclick=function(){ syncFieldsFromDom(); data.fields.push({label:'',value:'',secret:true}); document.getElementById('tr-e-fields').innerHTML=fieldRows(); rebind(); };
+      rebind();
+
+      /* --- Dokumente --- */
+      function renderDocList(){
+        var box=document.getElementById('tr-e-docs'); if(!box) return;
+        if(!data.docs.length){ box.innerHTML='<div class="tr-doc-empty">Noch keine Dokumente angehängt.</div>'; return; }
+        box.innerHTML=data.docs.map(function(d,i){
+          return '<div class="tr-doc" data-i="'+i+'"><span class="tr-doc-ic">'+docIcon(d.type,d.name)+'</span>'
+            +'<span class="tr-doc-name">'+esc(d.name)+'</span>'
+            +'<span class="tr-doc-size">'+fmtSize(d.size)+'</span>'
+            +'<button class="tr-mini tr-doc-del" title="Entfernen">✕</button></div>';
+        }).join('');
+        box.querySelectorAll('.tr-doc-del').forEach(function(b){
+          b.onclick=function(){ var i=+b.closest('.tr-doc').getAttribute('data-i'); var d=data.docs[i];
+            if(confirm('Dokument \''+d.name+'\' entfernen?')){ if(d.path) deleteDoc(d.path); data.docs.splice(i,1); renderDocList(); } };
+        });
+      }
+      renderDocList();
+      var upBtn=document.getElementById('tr-e-upload'), fileInp=document.getElementById('tr-e-file'), upStat=document.getElementById('tr-e-upstatus');
+      if(upBtn && fileInp){
+        upBtn.onclick=function(){
+          if(!storageActive()){ upStat.textContent='⚠️ Erst unter Einstellungen › Geräte-Sync verbinden.'; upStat.className='tr-upstatus err'; return; }
+          fileInp.click();
+        };
+        fileInp.onchange=async function(){
+          var files=Array.prototype.slice.call(fileInp.files||[]); if(!files.length) return;
+          for(var k=0;k<files.length;k++){
+            var f=files[k];
+            if(f.size>15728640){ upStat.textContent='„'+f.name+'" ist größer als 15 MB – übersprungen.'; upStat.className='tr-upstatus err'; continue; }
+            upStat.textContent='Lade „'+f.name+'" hoch …'; upStat.className='tr-upstatus';
+            try{ var doc=await uploadDoc(f); data.docs.push(doc); renderDocList(); upStat.textContent='✅ „'+f.name+'" hochgeladen'; upStat.className='tr-upstatus ok'; }
+            catch(e){ upStat.textContent='Fehler: '+(e.message||'Upload fehlgeschlagen'); upStat.className='tr-upstatus err'; }
+          }
+          fileInp.value='';
+        };
+      }
+    },60);
+  }
+
   function renderNews(){
     var w=document.getElementById('newswrap'); if(!w) return;
     var updTxt = newsUpd ? ('Aktualisiert '+newsRelTime(newsUpd)) : 'Live-Nachrichten';
