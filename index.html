@@ -1653,21 +1653,28 @@ var LifeOS=(function(){
       return (a.prio||2)-(b.prio||2);
     });
   }
+  /* ---- Eine gemeinsame Definition von „heute" (Filter + beide Fortschrittsbalken) ----
+     Heute zählt: heute fällige + überfällige offene Aufgaben, heute dran stehende
+     Wiederholungen, sowie alles, was du heute erledigt hast.
+     NICHT: Aufgaben ohne Datum (die stehen unter „Offen") und künftige Termine. */
+  function isTaskToday(t){
+    var td=todayStr();
+    if(t.rep && t.rep>0){
+      if(t.lastDone===td) return true;          /* heute schon abgehakt (Termin ist weitergerollt) */
+      return !t.due || t.due<=td;               /* heute dran bzw. überfällig */
+    }
+    if(t.done) return t.doneDay===td;           /* heute erledigte Einmal-Aufgabe */
+    return !!t.due && t.due<=td;                /* offen: heute fällig oder überfällig */
+  }
+  function isTaskDoneToday(t){
+    var td=todayStr();
+    if(t.rep && t.rep>0) return t.lastDone===td;
+    return !!t.done && t.doneDay===td;
+  }
   /* Gemeinsame Tages-Statistik für beide Fortschrittsbalken (Tab + Dashboard) */
   function taskTodayStats(){
-    var all=master.lifeos.tasks||[], today=todayStr();
-    function relevant(t){
-      if(t.rep && t.rep>0) return true;                 /* Wiederholungen = Tagesroutine */
-      if(t.done && t.doneDay===today) return true;      /* heute erledigte Einmal-Aufgaben */
-      if(!t.done && (!t.due || t.due<=today)) return true; /* offen, ohne/mit heutigem/überfälligem Datum */
-      return false;
-    }
-    function erledigtHeute(t){
-      if(t.rep && t.rep>0) return t.lastDone===today;
-      return t.done && t.doneDay===today;
-    }
-    var rel=all.filter(relevant);
-    return { done: rel.filter(erledigtHeute).length, total: rel.length };
+    var rel=(master.lifeos.tasks||[]).filter(isTaskToday);
+    return { done: rel.filter(isTaskDoneToday).length, total: rel.length };
   }
   function updateTaskProgress(){
     var box=document.getElementById('taskprog'); if(!box) return;
@@ -1696,15 +1703,7 @@ var LifeOS=(function(){
     h+='<div class="chiprow">'+['heute','offen','alle','erledigt'].map(function(f){ return '<button class="fchip'+(tFilter===f?' on':'')+'" data-tf="'+f+'">'+f.charAt(0).toUpperCase()+f.slice(1)+'</button>'; }).join('')
       +'<input class="sinput" id="tsearch" placeholder="Suchen …" style="flex-basis:100%;max-width:260px;padding:8px 13px;margin-top:2px" value="'+esc(tSearch)+'"></div>';
     var list=tasksSorted().filter(function(t){
-      if(tFilter==='heute'){
-        /* Heute = wiederkehrende Routine + offene ohne/mit heutigem oder überfälligem Datum
-           + heute bereits erledigte (damit man den Erfolg sieht) */
-        var td=todayStr();
-        var istHeute = (t.rep&&t.rep>0)
-          || (!t.done && (!t.due || t.due<=td))
-          || (t.done && t.doneDay===td);
-        if(!istHeute) return false;
-      }
+      if(tFilter==='heute' && !isTaskToday(t)) return false;
       if(tFilter==='offen'&&t.done) return false;
       if(tFilter==='erledigt'&&!t.done) return false;
       if(tSearch&&(t.title||'').toLowerCase().indexOf(tSearch)<0) return false;
