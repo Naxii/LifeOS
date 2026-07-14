@@ -1659,12 +1659,12 @@ var LifeOS=(function(){
      NICHT: Aufgaben ohne Datum (die stehen unter „Offen") und künftige Termine. */
   function isTaskToday(t){
     var td=todayStr();
-    if(t.rep && t.rep>0){
-      if(t.lastDone===td) return true;          /* heute schon abgehakt (Termin ist weitergerollt) */
-      return !t.due || t.due<=td;               /* heute dran bzw. überfällig */
-    }
-    if(t.done) return t.doneDay===td;           /* heute erledigte Einmal-Aufgabe */
-    return !!t.due && t.due<=td;                /* offen: heute fällig oder überfällig */
+    /* Heute schon abgehakt -> sichtbar lassen (Erfolg zeigen) */
+    if(t.rep && t.rep>0 && t.lastDone===td) return true;
+    if(t.done) return t.doneDay===td;
+    /* Sonst rein nach Datum: nur mit Fälligkeit heute oder überfällig.
+       Aufgaben ohne Datum gehören nicht zu „Heute" – die stehen unter „Offen". */
+    return !!t.due && t.due<=td;
   }
   function isTaskDoneToday(t){
     var td=todayStr();
@@ -1791,7 +1791,12 @@ var LifeOS=(function(){
     var btns=[{label:'Abbrechen'},{label:t?'Speichern':'Anlegen',cls:'pri',fn:function(){
       var ti=document.getElementById('tk-t').value.trim(); if(!ti) return false;
       var rep=+document.getElementById('tk-r').value||0;
-      var o={id:t?t.id:Date.now(),title:ti,due:document.getElementById('tk-d').value,prio:+document.getElementById('tk-p').value,cat:document.getElementById('tk-c').value.trim(),rep:rep,done:t?t.done:false,subs:t?(t.subs||[]):[]};
+      var dueVal=document.getElementById('tk-d').value;
+      /* Wiederkehrende Aufgabe ohne Datum bekommt heute als Startpunkt,
+         damit sie sich danach sauber über die Tage verteilt (statt jeden Tag zu erscheinen). */
+      if(rep>0 && !dueVal) dueVal=todayStr();
+      var o={id:t?t.id:Date.now(),title:ti,due:dueVal,prio:+document.getElementById('tk-p').value,cat:document.getElementById('tk-c').value.trim(),rep:rep,done:t?t.done:false,subs:t?(t.subs||[]):[]};
+      if(t){ o.doneDay=t.doneDay; o.lastDone=t.lastDone; }
       if(t){ var i=master.lifeos.tasks.findIndex(function(x){return x.id===t.id}); if(i>=0)master.lifeos.tasks[i]=o; }
       else master.lifeos.tasks.push(o);
       persist(); renderTasks(); renderDash();
@@ -1807,6 +1812,9 @@ var LifeOS=(function(){
   /* ------------------------- Phase 5: Datengerüst -------------------------- */
   function ensureMods(){
     var L=master.lifeos;
+    /* Migration: wiederkehrende Aufgaben ohne Fälligkeit bekommen heute als Startpunkt,
+       damit „Heute" nur noch zeigt, was wirklich dran ist. */
+    (L.tasks||[]).forEach(function(t){ if(t.rep && t.rep>0 && !t.due) t.due=todayStr(); });
     L.wartung=L.wartung||[];
     L.mods=L.mods||{};
     L.mods.edu=Object.assign({exams:[],topics:[],notes:''},L.mods.edu||{});
