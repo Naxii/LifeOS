@@ -610,7 +610,7 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
     </div>
   </div>
   <nav id="rail">
-    <div id="brand"><div class="mono"><span>N</span></div><div><div class="t">LifeOS</div><div class="s">Naxii · Personal OS</div></div></div>
+    <div id="brand"><div class="mono"><span>N</span></div><div><div class="t">LifeOS</div></div></div>
     <div id="railnav"></div>
     <div class="nspacer"></div>
     <div id="railclock">--:--</div>
@@ -1265,7 +1265,9 @@ var LifeOS=(function(){
     var tToday=(master.lifeos.tasks||[]).filter(function(t){ return !t.done&&t.due&&t.due<=todayStr(); })
       .sort(function(a,b){ return (a.due||'').localeCompare(b.due||'')||((a.prio||2)-(b.prio||2)); });
     var tOpen=(master.lifeos.tasks||[]).filter(function(t){return !t.done}).length;
-    W.heute='<div class="card"><div class="ttl">'+ICONS.task+'Heute fällig'+(tOpen?' · '+tOpen+' offen':'')+'</div>'
+    /* Für die Überschrift zählen wir die HEUTE offenen (passend zum Titel „Heute fällig") */
+    var tOpenToday=tToday.length;
+    W.heute='<div class="card"><div class="ttl">'+ICONS.task+'Heute fällig'+(tOpenToday?' · '+tOpenToday+' offen':'')+'</div>'
       +(tToday.length?tToday.slice(0,4).map(function(t){ var late=t.due<todayStr();
           return '<div class="kv"><span class="k" style="display:flex;align-items:center;gap:9px"><span class="tcheck" data-dtc="'+t.id+'" style="width:19px;height:19px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>'+esc(t.title)+'</span><span class="v" style="font-weight:500;color:'+(late?'var(--red,#FF7A7A)':'var(--text2)')+'">'+(late?'überfällig':'heute')+'</span></div>'; }).join('')
         :'<div class="empty">'+(tOpen?'Heute ist nichts fällig. 👌':'Keine offenen Aufgaben.')+'</div>')
@@ -1642,7 +1644,7 @@ var LifeOS=(function(){
 
   /* --------------------------------- Aufgaben ------------------------------ */
   var PRIOS={1:{n:'Hoch',c:'#FF7A7A'},2:{n:'Mittel',c:'#FFB340'},3:{n:'Niedrig',c:'#6BA5FF'}};
-  var tFilter='offen', tSearch='';
+  var tFilter='heute', tSearch='';
   function tasksSorted(){
     return (master.lifeos.tasks||[]).slice().sort(function(a,b){
       if(a.done!==b.done) return a.done?1:-1;
@@ -1691,9 +1693,18 @@ var LifeOS=(function(){
     var pct=total?Math.round(done/total*100):0;
     var h='<div class="calbar"><div class="mon">Aufgaben</div><div class="nspacer" style="flex:1"></div><button class="addfab" id="tadd">'+ICONS.plus+'Aufgabe</button></div>';
     h+='<div class="card" style="margin-bottom:14px"><div class="kv" style="border:0;padding:0 0 4px"><span class="k">'+(total?done+' von '+total+' heute erledigt':'Keine Aufgaben für heute')+'</span><span class="v">'+pct+' %</span></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>';
-    h+='<div class="chiprow">'+['offen','alle','erledigt'].map(function(f){ return '<button class="fchip'+(tFilter===f?' on':'')+'" data-tf="'+f+'">'+f.charAt(0).toUpperCase()+f.slice(1)+'</button>'; }).join('')
+    h+='<div class="chiprow">'+['heute','offen','alle','erledigt'].map(function(f){ return '<button class="fchip'+(tFilter===f?' on':'')+'" data-tf="'+f+'">'+f.charAt(0).toUpperCase()+f.slice(1)+'</button>'; }).join('')
       +'<input class="sinput" id="tsearch" placeholder="Suchen …" style="flex-basis:100%;max-width:260px;padding:8px 13px;margin-top:2px" value="'+esc(tSearch)+'"></div>';
     var list=tasksSorted().filter(function(t){
+      if(tFilter==='heute'){
+        /* Heute = wiederkehrende Routine + offene ohne/mit heutigem oder überfälligem Datum
+           + heute bereits erledigte (damit man den Erfolg sieht) */
+        var td=todayStr();
+        var istHeute = (t.rep&&t.rep>0)
+          || (!t.done && (!t.due || t.due<=td))
+          || (t.done && t.doneDay===td);
+        if(!istHeute) return false;
+      }
       if(tFilter==='offen'&&t.done) return false;
       if(tFilter==='erledigt'&&!t.done) return false;
       if(tSearch&&(t.title||'').toLowerCase().indexOf(tSearch)<0) return false;
@@ -1757,7 +1768,7 @@ var LifeOS=(function(){
     t.done=!t.done;
     if(t.done) t.doneDay=todayStr(); else t.doneDay=null;
     persist(); renderDash();
-    if(wasChecking && tFilter==='offen'){
+    if(wasChecking && (tFilter==='offen')){
       /* Aufgabe im Offen-Filter kurz als erledigt aufleuchten lassen, dann ausblenden */
       var card=document.querySelector('.task[data-tid="'+id+'"]');
       if(card){
