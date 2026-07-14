@@ -358,6 +358,10 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .tcheck svg{width:13px;height:13px}
 .task .tt{font-weight:600;font-size:14.5px;flex:1;cursor:pointer}
 .task.done .tt{text-decoration:line-through}
+.task.just-done{animation:taskdone .6s ease}
+@keyframes taskdone{0%{background:color-mix(in srgb,var(--teal,#8FD25C) 22%,transparent);transform:scale(1.01)}100%{background:transparent;transform:scale(1)}}
+.tcheck{transition:background .2s,border-color .2s,transform .15s}
+.tcheck.on{transform:scale(1.05)}
 .tmeta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:7px 0 0 35px}
 .tbadge{font:600 11px 'Inter';padding:3.5px 9px;border-radius:99px;background:var(--surf2,#1F2640);color:var(--text2)}
 .tbadge.late{background:var(--red-bg,rgba(255,80,80,.15));color:var(--red,#FF7A7A)}
@@ -462,6 +466,13 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .rwrap svg{transform:rotate(-90deg);display:block}
 .hring .rc{fill:none;stroke:rgba(255,255,255,.18);stroke-width:9}
 .hring .rf{fill:none;stroke:url(#ringgrad);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.taskprog{margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border,rgba(255,255,255,.08))}
+.taskprog-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.taskprog-top span{font-size:13px;color:var(--text2)}
+.taskprog-top b{font-family:'Space Grotesk';font-weight:700;font-size:14px}
+.taskprog-bar{height:8px;border-radius:99px;background:color-mix(in srgb,var(--surface,#161F17) 80%,transparent);overflow:hidden}
+.taskprog-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--teal,#8FD25C),color-mix(in srgb,var(--teal,#8FD25C) 55%,#fff));transition:width .5s ease}
+.taskprog.done .taskprog-bar i{background:linear-gradient(90deg,var(--teal,#8FD25C),var(--teal,#8FD25C))}
 .rmid{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .rmid b{font-family:'Space Grotesk';font-size:24px;line-height:1}
 .rmid span{display:block;font-size:8px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;opacity:.7;margin-top:3px;line-height:1.15}
@@ -649,6 +660,10 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
             <div style="width:100%">
               <div class="cdl"><span>Bis Feierabend</span><b id="cdfa">–</b></div>
               <div class="cdl"><span>Nächster Termin</span><b id="cdnext">–</b></div>
+              <div class="taskprog" id="taskprog">
+                <div class="taskprog-top"><span id="taskprog-label">Aufgaben heute</span><b id="taskprog-count">0/0</b></div>
+                <div class="taskprog-bar"><i id="taskprog-fill" style="width:0%"></i></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1635,6 +1650,27 @@ var LifeOS=(function(){
       return (a.prio||2)-(b.prio||2);
     });
   }
+  function updateTaskProgress(){
+    var box=document.getElementById('taskprog'); if(!box) return;
+    var today=todayStr();
+    /* Nur HEUTE fällige Aufgaben zählen */
+    var todays=(master.lifeos.tasks||[]).filter(function(t){ return t.due===today; });
+    var doneN=todays.filter(function(t){ return t.done; }).length;
+    var totalN=todays.length;
+    var lbl=document.getElementById('taskprog-label'), cnt=document.getElementById('taskprog-count'), fill=document.getElementById('taskprog-fill');
+    if(!totalN){
+      lbl.textContent='Aufgaben heute';
+      cnt.textContent='keine';
+      fill.style.width='0%';
+      box.classList.remove('done');
+      return;
+    }
+    var pct=Math.round(doneN/totalN*100);
+    lbl.textContent = (doneN===totalN) ? 'Heute alles erledigt 🎉' : 'Aufgaben heute';
+    cnt.textContent=doneN+'/'+totalN;
+    fill.style.width=pct+'%';
+    box.classList.toggle('done', doneN===totalN);
+  }
   function renderTasks(){
     var w=document.getElementById('taskwrap'), all=master.lifeos.tasks||[];
     var open=all.filter(function(t){return !t.done}).length, done=all.length-open;
@@ -1696,10 +1732,27 @@ var LifeOS=(function(){
       var base = (t.due && t.due>=todayStr()) ? t.due : todayStr();
       t.due = addDaysISO(base, t.rep);
       (t.subs||[]).forEach(function(sx){ sx.done=false; });
-      persist(); renderTasks(); renderDash();
+      var card0=document.querySelector('.task[data-tid="'+id+'"]');
+      persist(); renderDash();
+      /* kurzes Feedback: „↻ verschoben" Toast */
+      trToast('↻ Verschoben auf '+dShort(t.due));
+      renderTasks();
       return;
     }
-    t.done=!t.done; persist(); renderTasks(); renderDash();
+    var wasChecking = !t.done;
+    t.done=!t.done; persist(); renderDash();
+    if(wasChecking && tFilter==='offen'){
+      /* Aufgabe im Offen-Filter kurz als erledigt aufleuchten lassen, dann ausblenden */
+      var card=document.querySelector('.task[data-tid="'+id+'"]');
+      if(card){
+        var chk=card.querySelector('.tcheck'); if(chk) chk.classList.add('on');
+        card.classList.add('done','just-done');
+        trToast('✓ Erledigt');
+        setTimeout(function(){ renderTasks(); }, 620);
+        return;
+      }
+    }
+    renderTasks();
   }
   function taskModal(t){
     var repOpts=[[0,'Keine'],[1,'Täglich'],[2,'Alle 2 Tage'],[3,'Alle 3 Tage'],[4,'Alle 4 Tage'],[5,'Alle 5 Tage'],[6,'Alle 6 Tage'],[7,'Alle 7 Tage (wöchentlich)']];
@@ -2788,6 +2841,7 @@ var LifeOS=(function(){
     var pct=(h*3600+n.getMinutes()*60+n.getSeconds())/864, C=2*Math.PI*56;
     var rf=document.getElementById('ringfg'); rf.style.strokeDasharray=C; rf.style.strokeDashoffset=C*(1-pct/100);
     document.getElementById('ringpct').textContent=Math.round(pct)+' %';
+    updateTaskProgress();
     var fa=(master.lifeos.feierabend||'17:00').split(':'), faMin=(+fa[0])*60+(+fa[1]), nowMin=h*60+n.getMinutes();
     document.getElementById('cdfa').textContent = nowMin<faMin ? fmtDur(faMin-nowMin) : 'Feierabend 🎉';
     document.getElementById('cdnext').textContent = nextEventLabel(n);
