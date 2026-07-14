@@ -1673,10 +1673,24 @@ var LifeOS=(function(){
   }
   function renderTasks(){
     var w=document.getElementById('taskwrap'), all=master.lifeos.tasks||[];
-    var open=all.filter(function(t){return !t.done}).length, done=all.length-open;
-    var pct=all.length?Math.round(done/all.length*100):0;
+    var today=todayStr();
+    /* Fortschritt bezieht sich auf HEUTE, damit er auch bei wiederkehrenden Aufgaben steigt
+       und nicht durch alte Aufgaben verwässert wird. */
+    function relevantHeute(t){
+      if(t.rep && t.rep>0){ return true; }            /* Wiederholungen zählen immer als Tagesroutine */
+      if(t.done && t.doneDay===today) return true;    /* heute erledigte Einmal-Aufgaben */
+      if(!t.done && (!t.due || t.due<=today)) return true; /* offene ohne/mit heute-/überfälligem Datum */
+      return false;
+    }
+    var rel=all.filter(relevantHeute);
+    function istHeuteErledigt(t){
+      if(t.rep && t.rep>0) return t.lastDone===today;
+      return t.done && t.doneDay===today;
+    }
+    var done=rel.filter(istHeuteErledigt).length, total=rel.length;
+    var pct=total?Math.round(done/total*100):0;
     var h='<div class="calbar"><div class="mon">Aufgaben</div><div class="nspacer" style="flex:1"></div><button class="addfab" id="tadd">'+ICONS.plus+'Aufgabe</button></div>';
-    h+='<div class="card" style="margin-bottom:14px"><div class="kv" style="border:0;padding:0 0 4px"><span class="k">'+done+' von '+all.length+' erledigt</span><span class="v">'+pct+' %</span></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>';
+    h+='<div class="card" style="margin-bottom:14px"><div class="kv" style="border:0;padding:0 0 4px"><span class="k">'+(total?done+' von '+total+' heute erledigt':'Keine Aufgaben für heute')+'</span><span class="v">'+pct+' %</span></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>';
     h+='<div class="chiprow">'+['offen','alle','erledigt'].map(function(f){ return '<button class="fchip'+(tFilter===f?' on':'')+'" data-tf="'+f+'">'+f.charAt(0).toUpperCase()+f.slice(1)+'</button>'; }).join('')
       +'<input class="sinput" id="tsearch" placeholder="Suchen …" style="flex-basis:100%;max-width:260px;padding:8px 13px;margin-top:2px" value="'+esc(tSearch)+'"></div>';
     var list=tasksSorted().filter(function(t){
@@ -1730,17 +1744,19 @@ var LifeOS=(function(){
     /* Wiederkehrende Aufgabe: beim Abhaken nicht erledigen, sondern auf nächsten Termin weiterrollen */
     if(!t.done && t.rep && t.rep>0){
       var base = (t.due && t.due>=todayStr()) ? t.due : todayStr();
+      t.lastDone = todayStr();           /* heute erledigt-Stempel für den Fortschritt */
       t.due = addDaysISO(base, t.rep);
       (t.subs||[]).forEach(function(sx){ sx.done=false; });
-      var card0=document.querySelector('.task[data-tid="'+id+'"]');
       persist(); renderDash();
       /* kurzes Feedback: „↻ verschoben" Toast */
-      trToast('↻ Verschoben auf '+dShort(t.due));
+      trToast('↻ Erledigt · nächster Termin '+dShort(t.due));
       renderTasks();
       return;
     }
     var wasChecking = !t.done;
-    t.done=!t.done; persist(); renderDash();
+    t.done=!t.done;
+    if(t.done) t.doneDay=todayStr(); else t.doneDay=null;
+    persist(); renderDash();
     if(wasChecking && tFilter==='offen'){
       /* Aufgabe im Offen-Filter kurz als erledigt aufleuchten lassen, dann ausblenden */
       var card=document.querySelector('.task[data-tid="'+id+'"]');
