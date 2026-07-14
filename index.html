@@ -1645,9 +1645,16 @@ var LifeOS=(function(){
   /* --------------------------------- Aufgaben ------------------------------ */
   var PRIOS={1:{n:'Hoch',c:'#FF7A7A'},2:{n:'Mittel',c:'#FFB340'},3:{n:'Niedrig',c:'#6BA5FF'}};
   var tFilter='heute', tSearch='';
+  /* Erledigt-Status: Wiederholungen gelten als erledigt, wenn sie HEUTE abgehakt wurden
+     (und sind morgen automatisch wieder offen). Normale Aufgaben nutzen done. */
+  function taskIsDone(t){
+    if(t.rep && t.rep>0) return t.lastDone===todayStr();
+    return !!t.done;
+  }
   function tasksSorted(){
     return (master.lifeos.tasks||[]).slice().sort(function(a,b){
-      if(a.done!==b.done) return a.done?1:-1;
+      var ad2=taskIsDone(a), bd2=taskIsDone(b);
+      if(ad2!==bd2) return ad2?1:-1;
       var ad=a.due||'9999', bd=b.due||'9999';
       if(ad!==bd) return ad.localeCompare(bd);
       return (a.prio||2)-(b.prio||2);
@@ -1671,6 +1678,7 @@ var LifeOS=(function(){
     if(t.rep && t.rep>0) return t.lastDone===td;
     return !!t.done && t.doneDay===td;
   }
+  /* ---------------------------------------------------------------- */
   /* Gemeinsame Tages-Statistik für beide Fortschrittsbalken (Tab + Dashboard) */
   function taskTodayStats(){
     var rel=(master.lifeos.tasks||[]).filter(isTaskToday);
@@ -1704,16 +1712,17 @@ var LifeOS=(function(){
       +'<input class="sinput" id="tsearch" placeholder="Suchen …" style="flex-basis:100%;max-width:260px;padding:8px 13px;margin-top:2px" value="'+esc(tSearch)+'"></div>';
     var list=tasksSorted().filter(function(t){
       if(tFilter==='heute' && !isTaskToday(t)) return false;
-      if(tFilter==='offen'&&t.done) return false;
-      if(tFilter==='erledigt'&&!t.done) return false;
+      if(tFilter==='offen'&&taskIsDone(t)) return false;
+      if(tFilter==='erledigt'&&!taskIsDone(t)) return false;
       if(tSearch&&(t.title||'').toLowerCase().indexOf(tSearch)<0) return false;
       return true; });
     if(!list.length) h+='<div class="card"><div class="empty">'+(all.length?'Nichts gefunden.':'Noch keine Aufgaben – lege oben rechts deine erste an.')+'</div></div>';
     list.forEach(function(t){
-      var late=t.due&&!t.done&&t.due<todayStr();
+      var tDone=taskIsDone(t);
+      var late=t.due&&!tDone&&t.due<todayStr();
       var sd=(t.subs||[]).filter(function(x){return x.done}).length, st=(t.subs||[]).length;
-      h+='<div class="task'+(t.done?' done':'')+'" data-tid="'+t.id+'"><div class="trow">'
-        +'<div class="tcheck'+(t.done?' on':'')+'" data-tc="'+t.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>'
+      h+='<div class="task'+(tDone?' done':'')+'" data-tid="'+t.id+'"><div class="trow">'
+        +'<div class="tcheck'+(tDone?' on':'')+'" data-tc="'+t.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>'
         +'<div class="tt" data-tx="'+t.id+'">'+esc(t.title)+'</div>'
         +'<button class="tico" data-te="'+t.id+'" aria-label="Bearbeiten">'+ICONS.pen+'</button></div>'
         +'<div class="tmeta">'
@@ -1752,14 +1761,21 @@ var LifeOS=(function(){
   function toggleTask(id){
     var t=(master.lifeos.tasks||[]).filter(function(x){return x.id===id})[0]; if(!t) return;
     /* Wiederkehrende Aufgabe: beim Abhaken nicht erledigen, sondern auf nächsten Termin weiterrollen */
-    if(!t.done && t.rep && t.rep>0){
-      var base = (t.due && t.due>=todayStr()) ? t.due : todayStr();
-      t.lastDone = todayStr();           /* heute erledigt-Stempel für den Fortschritt */
+    if(t.rep && t.rep>0){
+      var td=todayStr();
+      if(t.lastDone===td){
+        /* Rückgängig: heute doch nicht erledigt */
+        t.due = t.prevDue || td; t.prevDue=null; t.lastDone=null;
+        persist(); renderDash(); renderTasks();
+        return;
+      }
+      var base = (t.due && t.due>=td) ? t.due : td;
+      t.prevDue = t.due || td;           /* für Rückgängig merken */
+      t.lastDone = td;                   /* heute erledigt */
       t.due = addDaysISO(base, t.rep);
       (t.subs||[]).forEach(function(sx){ sx.done=false; });
       persist(); renderDash();
-      /* kurzes Feedback: „↻ verschoben" Toast */
-      trToast('↻ Erledigt · nächster Termin '+dShort(t.due));
+      trToast('✓ Erledigt · wieder am '+dShort(t.due));
       renderTasks();
       return;
     }
