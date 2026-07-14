@@ -1359,6 +1359,7 @@ var LifeOS=(function(){
           dragId=null; persist(); renderDash(); });
       });
     }
+    if(typeof updateTaskProgress==='function') updateTaskProgress();
   }
 
   /* --------------------------- Weitere Module ------------------------------ */
@@ -1650,13 +1651,25 @@ var LifeOS=(function(){
       return (a.prio||2)-(b.prio||2);
     });
   }
+  /* Gemeinsame Tages-Statistik für beide Fortschrittsbalken (Tab + Dashboard) */
+  function taskTodayStats(){
+    var all=master.lifeos.tasks||[], today=todayStr();
+    function relevant(t){
+      if(t.rep && t.rep>0) return true;                 /* Wiederholungen = Tagesroutine */
+      if(t.done && t.doneDay===today) return true;      /* heute erledigte Einmal-Aufgaben */
+      if(!t.done && (!t.due || t.due<=today)) return true; /* offen, ohne/mit heutigem/überfälligem Datum */
+      return false;
+    }
+    function erledigtHeute(t){
+      if(t.rep && t.rep>0) return t.lastDone===today;
+      return t.done && t.doneDay===today;
+    }
+    var rel=all.filter(relevant);
+    return { done: rel.filter(erledigtHeute).length, total: rel.length };
+  }
   function updateTaskProgress(){
     var box=document.getElementById('taskprog'); if(!box) return;
-    var today=todayStr();
-    /* Nur HEUTE fällige Aufgaben zählen */
-    var todays=(master.lifeos.tasks||[]).filter(function(t){ return t.due===today; });
-    var doneN=todays.filter(function(t){ return t.done; }).length;
-    var totalN=todays.length;
+    var st=taskTodayStats(), doneN=st.done, totalN=st.total;
     var lbl=document.getElementById('taskprog-label'), cnt=document.getElementById('taskprog-count'), fill=document.getElementById('taskprog-fill');
     if(!totalN){
       lbl.textContent='Aufgaben heute';
@@ -1673,21 +1686,8 @@ var LifeOS=(function(){
   }
   function renderTasks(){
     var w=document.getElementById('taskwrap'), all=master.lifeos.tasks||[];
-    var today=todayStr();
-    /* Fortschritt bezieht sich auf HEUTE, damit er auch bei wiederkehrenden Aufgaben steigt
-       und nicht durch alte Aufgaben verwässert wird. */
-    function relevantHeute(t){
-      if(t.rep && t.rep>0){ return true; }            /* Wiederholungen zählen immer als Tagesroutine */
-      if(t.done && t.doneDay===today) return true;    /* heute erledigte Einmal-Aufgaben */
-      if(!t.done && (!t.due || t.due<=today)) return true; /* offene ohne/mit heute-/überfälligem Datum */
-      return false;
-    }
-    var rel=all.filter(relevantHeute);
-    function istHeuteErledigt(t){
-      if(t.rep && t.rep>0) return t.lastDone===today;
-      return t.done && t.doneDay===today;
-    }
-    var done=rel.filter(istHeuteErledigt).length, total=rel.length;
+    /* Fortschritt bezieht sich auf HEUTE (gleiche Logik wie das Dashboard-Widget) */
+    var st=taskTodayStats(), done=st.done, total=st.total;
     var pct=total?Math.round(done/total*100):0;
     var h='<div class="calbar"><div class="mon">Aufgaben</div><div class="nspacer" style="flex:1"></div><button class="addfab" id="tadd">'+ICONS.plus+'Aufgabe</button></div>';
     h+='<div class="card" style="margin-bottom:14px"><div class="kv" style="border:0;padding:0 0 4px"><span class="k">'+(total?done+' von '+total+' heute erledigt':'Keine Aufgaben für heute')+'</span><span class="v">'+pct+' %</span></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>';
