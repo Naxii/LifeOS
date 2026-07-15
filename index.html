@@ -194,6 +194,22 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .wx-empty .bico{font-size:44px;margin-bottom:12px}
 .wx-reload{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:10px 16px;border-radius:13px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1E2A1F);color:var(--text);font:600 13px 'Inter';cursor:pointer}
 @media(max-width:520px){.wx-metrics{grid-template-columns:repeat(2,1fr)}}
+/* ---------- Berichtsheft ---------- */
+.bh-list{display:flex;flex-direction:column;gap:6px}
+.bh-row{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:12px;
+  background:color-mix(in srgb,var(--bg,#0C120D) 40%,transparent)}
+.bh-kw{flex-shrink:0;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:var(--teal,#8FD25C);
+  min-width:54px;display:flex;flex-direction:column;line-height:1.15;border:0;cursor:pointer;text-align:left;
+  background:color-mix(in srgb,var(--teal,#8FD25C) 12%,transparent);border-radius:9px;padding:6px 8px}
+.bh-kw:active{transform:scale(.96)}
+.bh-kw small{font-size:9.5px;font-weight:500;color:var(--text3)}
+.bh-info{flex:1;min-width:0}
+.bh-name{display:block;font-size:13.5px;font-weight:500;color:var(--text);text-decoration:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bh-name:hover{color:var(--teal,#8FD25C)}
+.bh-range{font-size:11px;color:var(--text3);margin-top:2px}
+.bh-del{flex-shrink:0}
+/* ---------- Berichtsheft Ende ---------- */
 /* ---------- Doku-Tresor ---------- */
 #tresorwrap{max-width:820px}
 .tr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap}
@@ -352,6 +368,11 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .calcell{min-height:96px;border-radius:15px;padding:8px;background:color-mix(in srgb,var(--surface,#161B2E) 68%,transparent);border:0.5px solid var(--border,rgba(255,255,255,.06));cursor:pointer;transition:all .18s;overflow:hidden}
 .calcell:hover{border-color:var(--teal,#6BA5FF)}
 .calcell.dim{opacity:.38}
+/* Schulferien: dezent blau getönt */
+.calcell.ferien{background:color-mix(in srgb,#5BB8E8 13%,color-mix(in srgb,var(--surface,#161B2E) 68%,transparent))}
+/* Feiertag: Tagesziffer rosa hervorheben */
+.calcell.feiertag .dno{color:#E86BA0;font-weight:700}
+.calcell.today.feiertag .dno{background:#E86BA0;color:#fff}
 .calcell .dno{font:600 12.5px 'Space Grotesk';color:var(--text2);width:24px;height:24px;display:grid;place-items:center;border-radius:9px;margin-bottom:5px}
 .calcell.today .dno{background:var(--teal,#6BA5FF);color:#fff}
 .evpill{font-size:10.5px;font-weight:600;padding:3px 7px;border-radius:7px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
@@ -908,8 +929,48 @@ var LifeOS=(function(){
   function docIcon(type,name){
     var t=(type||'')+' '+(name||'');
     if(/pdf/i.test(t)) return '📄';
+    if(/(docx?|wordprocessing|msword)/i.test(t)) return '📝';
     if(/(png|jpe?g|gif|webp|heic|image)/i.test(t)) return '🖼️';
     return '📎';
+  }
+  /* ISO-Kalenderwoche eines Datums (für das Berichtsheft) */
+  function isoWeek(d){
+    var t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+    var dn=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-dn);
+    var y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));
+    return {kw:Math.ceil((((t-y0)/86400000)+1)/7), jahr:t.getUTCFullYear()};
+  }
+  /* Dateinamen von Wochenberichten deuten.
+     Hauptformat (Nils): TTMM_TTMM  ->  1108_1508 = 11.08. bis 15.08.
+     Das Jahr steht nicht im Namen. Da Berichte immer für bereits vergangene
+     Wochen geschrieben werden, nehmen wir das jüngste passende Jahr
+     (bis zu 7 Tage in der Zukunft sind erlaubt = laufende Woche). */
+  function parseBerichtName(name){
+    var heute=new Date(), hy=heute.getFullYear();
+    /* 1) ISO-Datum im Namen: 2026-07-06 */
+    var dM=name.match(/(20\d{2})[-_.](\d{1,2})[-_.](\d{1,2})/);
+    if(dM){
+      var dd=new Date(+dM[1],+dM[2]-1,+dM[3]), w=isoWeek(dd);
+      return {kw:w.kw, jahr:w.jahr, von:iso(dd), bis:''};
+    }
+    /* 2) TTMM_TTMM */
+    var m=name.match(/(\d{2})(\d{2})[_\-. ]+(\d{2})(\d{2})/);
+    if(m){
+      var d1=+m[1], mo1=+m[2], d2=+m[3], mo2=+m[4];
+      if(mo1>=1&&mo1<=12&&d1>=1&&d1<=31&&mo2>=1&&mo2<=12&&d2>=1&&d2<=31){
+        var y=hy, von=new Date(y,mo1-1,d1);
+        if((von-heute)/86400000 > 7){ y--; von=new Date(y,mo1-1,d1); }   /* Bericht liegt in der Vergangenheit */
+        var y2=(mo2<mo1)?y+1:y;                                          /* Jahreswechsel, z. B. 2812_0201 */
+        var bis=new Date(y2,mo2-1,d2), wk=isoWeek(von);
+        return {kw:wk.kw, jahr:wk.jahr, von:iso(von), bis:iso(bis)};
+      }
+    }
+    /* 3) KW im Namen: KW28 */
+    var kwM=name.match(/KW[\s_-]?(\d{1,2})/i);
+    if(kwM) return {kw:+kwM[1], jahr:hy, von:'', bis:''};
+    /* 4) Fallback: aktuelle Woche */
+    var w2=isoWeek(heute);
+    return {kw:w2.kw, jahr:w2.jahr, von:iso(heute), bis:''};
   }
   /* ======================================================================== */
   /* Tabelle: lifeos_data (code text primary key, data jsonb, updated_at timestamptz) */
@@ -1072,6 +1133,7 @@ var LifeOS=(function(){
     {id:'sprit',n:'Fahrzeuge',ic:'car',d:1},
     {id:'kalender',n:'Kalender',ic:'cal',d:1},
     {id:'aufgaben',n:'Aufgaben',ic:'task',d:0},
+    {id:'edu',n:'Ausbildung',ic:'grad',d:0},
     {id:'wetter',n:'Wetter',ic:'weather',d:0},
     {id:'f1',n:'Formel 1',ic:'f1',d:0},
     {id:'news',n:'News',ic:'news',d:0},
@@ -1543,6 +1605,61 @@ var LifeOS=(function(){
   function dLong(s){ var d=new Date(s+'T00:00'); return d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'}); }
   function dShort(s){ var d=new Date(s+'T00:00'); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }
 
+  /* ---------------- Feiertage & Schulferien Hessen -------------------------
+     Feiertage werden aus dem Osterdatum berechnet (Gauss/Meeus-Algorithmus),
+     damit sie für jedes Jahr automatisch stimmen – ohne gepflegte Listen.
+     Hessen: kein Reformationstag, kein Allerheiligen, aber Fronleichnam.
+     Ferientermine: Hessisches Kultusministerium (Stand Juli 2026). ------------ */
+  function easterISO(y){
+    var a=y%19, b=Math.floor(y/100), c=y%100, d=Math.floor(b/4), e=b%4,
+        f=Math.floor((b+8)/25), g=Math.floor((b-f+1)/3), h=(19*a+b-d-g+15)%30,
+        i=Math.floor(c/4), k=c%4, l=(32+2*e+2*i-h-k)%7, m=Math.floor((a+11*h+22*l)/451),
+        mo=Math.floor((h+l-7*m+114)/31), da=((h+l-7*m+114)%31)+1;
+    return new Date(y, mo-1, da);
+  }
+  function addDays(d,n){ var x=new Date(d.getTime()); x.setDate(x.getDate()+n); return x; }
+  var feierCache={};
+  function feiertageOf(y){
+    if(feierCache[y]) return feierCache[y];
+    var os=easterISO(y), map={};
+    function put(dt,name){ map[iso(dt)]=name; }
+    put(new Date(y,0,1),'Neujahr');
+    put(addDays(os,-2),'Karfreitag');
+    put(os,'Ostersonntag');
+    put(addDays(os,1),'Ostermontag');
+    put(new Date(y,4,1),'Tag der Arbeit');
+    put(addDays(os,39),'Christi Himmelfahrt');
+    put(addDays(os,49),'Pfingstsonntag');
+    put(addDays(os,50),'Pfingstmontag');
+    put(addDays(os,60),'Fronleichnam');
+    put(new Date(y,9,3),'Tag der Deutschen Einheit');
+    put(new Date(y,11,25),'1. Weihnachtstag');
+    put(new Date(y,11,26),'2. Weihnachtstag');
+    feierCache[y]=map; return map;
+  }
+  function feiertagAm(dstr){
+    var y=+dstr.slice(0,4);
+    return feiertageOf(y)[dstr]||null;
+  }
+  /* Schulferien Hessen – Quelle: Hessisches Kultusministerium.
+     Hessen hat keine Winter- und keine Pfingstferien. */
+  var FERIEN_HE=[
+    {n:'Sommerferien',    a:'2026-06-29', b:'2026-08-07'},
+    {n:'Herbstferien',    a:'2026-10-05', b:'2026-10-17'},
+    {n:'Weihnachtsferien',a:'2026-12-23', b:'2027-01-12'},
+    {n:'Osterferien',     a:'2027-03-22', b:'2027-04-02'},
+    {n:'Sommerferien',    a:'2027-06-28', b:'2027-08-06'},
+    {n:'Herbstferien',    a:'2027-10-04', b:'2027-10-16'},
+    {n:'Weihnachtsferien',a:'2027-12-23', b:'2028-01-11'}
+  ];
+  function ferienAm(dstr){
+    for(var i=0;i<FERIEN_HE.length;i++){
+      var f=FERIEN_HE[i];
+      if(dstr>=f.a && dstr<=f.b) return {name:f.n, first:dstr===f.a, last:dstr===f.b, bis:f.b};
+    }
+    return null;
+  }
+
   /* --------------------------------- Kalender ------------------------------ */
   var EV_CATS={privat:{n:'Privat',c:'#6BA5FF'},arbeit:{n:'Arbeit/Ausbildung',c:'#FFB340'},geburtstag:{n:'Geburtstag',c:'#FF7A9C'},fahrzeug:{n:'Fahrzeug',c:'#32D158'},sonstig:{n:'Sonstiges',c:'#9E9EB8'}};
   var REPEATS={none:'Keine',weekly:'Wöchentlich',monthly:'Monatlich',yearly:'Jährlich'};
@@ -1593,7 +1710,8 @@ var LifeOS=(function(){
           .concat(it.ex.map(function(x){return {t:x.t,c:x.c}}));
         all.slice(0,3).forEach(function(p){ pills+='<div class="evpill" style="background:'+p.c+'">'+esc(p.t)+'</div>'; });
         if(all.length>3) pills+='<div class="evmore">+'+(all.length-3)+' weitere</div>';
-        h+='<div class="calcell'+(dim?' dim':'')+(ds===todayStr()?' today':'')+'" data-cd="'+ds+'"><div class="dno">'+cd.getDate()+'</div>'+pills+'</div>';
+        var isFt=!!feiertagAm(ds), isFe=!!ferienAm(ds);
+        h+='<div class="calcell'+(dim?' dim':'')+(ds===todayStr()?' today':'')+(isFe?' ferien':'')+(isFt?' feiertag':'')+'" data-cd="'+ds+'"><div class="dno">'+cd.getDate()+'</div>'+pills+'</div>';
       }
       h+='</div>';
     } else {
@@ -1854,7 +1972,8 @@ var LifeOS=(function(){
     (L.tasks||[]).forEach(function(t){ if(t.rep && t.rep>0 && !t.due) t.due=todayStr(); });
     L.wartung=L.wartung||[];
     L.mods=L.mods||{};
-    L.mods.edu=Object.assign({exams:[],topics:[],notes:''},L.mods.edu||{});
+    L.mods.edu=Object.assign({exams:[],topics:[],notes:'',berichte:[]},L.mods.edu||{});
+    L.mods.edu.berichte=L.mods.edu.berichte||[];
     L.mods.health=Object.assign({waterGoal:8,water:{},weight:[],sleep:{},mood:{},meds:[]},L.mods.health||{});
     L.mods.home=Object.assign({shop:[],chores:[],plants:[],muell:[],notes:''},L.mods.home||{});
     L.mods.pets=Object.assign({pets:[],vet:[],vacc:[],weight:[]},L.mods.pets||{});
@@ -1868,6 +1987,12 @@ var LifeOS=(function(){
   /* Modulübergreifende Kalender-Einträge (Wartung, Prüfungen, Tierarzt, Müll) */
   function dayExtras(dstr){
     var ex=[], L=master.lifeos, M=L.mods;
+    /* Gesetzlicher Feiertag (Hessen) */
+    var ft=feiertagAm(dstr);
+    if(ft) ex.push({t:'🎉 '+ft,c:'#E86BA0',go:'kalender',m:'Feiertag in Hessen'});
+    /* Ferien nur am ersten Tag als Eintrag (sonst 6 Wochen lang Dauer-Einträge) */
+    var fe=ferienAm(dstr);
+    if(fe && fe.first) ex.push({t:'🏖️ '+fe.name+' beginnen',c:'#5BB8E8',go:'kalender',m:'Schulferien Hessen · bis '+dShort(fe.bis)});
     (L.wartung||[]).forEach(function(w){ if(w.date===dstr) ex.push({t:w.type+(w.title?': '+w.title:''),c:EV_CATS.fahrzeug.c,go:'sprit',m:'Fahrzeug'}); });
     ((M.edu||{}).exams||[]).forEach(function(e){ if(e.date===dstr) ex.push({t:'Prüfung: '+e.title,c:EV_CATS.arbeit.c,go:'edu',m:'Ausbildung'}); });
     ((M.pets||{}).vet||[]).forEach(function(v){ if(v.date===dstr){ var p=(M.pets.pets||[]).filter(function(x){return x.id===v.petId})[0]; ex.push({t:'Tierarzt'+(p?' ('+p.name+')':'')+(v.title?': '+v.title:''),c:'#FF7A9C',go:'pets',m:'Haustiere'}); } });
@@ -1964,6 +2089,29 @@ var LifeOS=(function(){
     h+='<div class="card"><div class="ttl">'+ICONS.task+'Lernthemen · '+pct+' %</div><div class="bar"><i style="width:'+pct+'%"></i></div>'
       +E.topics.map(function(t,i){ return '<div class="tsub'+(t.done?' done':'')+'"><div class="tcheck'+(t.done?' on':'')+'" data-et="'+i+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div><span style="flex:1">'+esc(t.t)+'</span>'+delBtn('data-etd',i)+'</div>'; }).join('')
       +'<div class="tsubadd"><input id="etnew" placeholder="Lernthema hinzufügen …"><button class="cbtn" id="etadd">+</button></div></div>';
+    /* --- Berichtsheft-Archiv --- */
+    var bh=(E.berichte||[]).slice().sort(function(a,b){
+      if(a.von&&b.von) return b.von.localeCompare(a.von);
+      return (b.jahr-a.jahr)||(b.kw-a.kw);
+    });
+    h+='<div class="card" style="grid-column:1/-1"><div class="ttl">'+ICONS.doc+'Berichtsheft</div>'
+      +'<div class="note" style="margin-bottom:10px">Lade deine Wochenberichte (Word oder PDF) hoch – sie liegen sicher in der Cloud und sind auf allen Geräten da.</div>'
+      +(bh.length?'<div class="bh-list">'+bh.map(function(x){
+          var rng='';
+          if(x.von && x.bis) rng=dShort(x.von)+' – '+dShort(x.bis);
+          else if(x.von) rng=dShort(x.von);
+          return '<div class="bh-row" data-bhid="'+esc(x.id)+'">'
+            +'<button class="bh-kw" data-bhedit="'+esc(x.id)+'" title="Zeitraum korrigieren">KW '+x.kw+'<small>'+x.jahr+'</small></button>'
+            +'<div class="bh-info">'
+            +'<a class="bh-name" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+docIcon(x.type,x.name)+' '+esc(x.name)+'</a>'
+            +'<div class="bh-range">'+(rng?esc(rng)+' · ':'')+fmtSize(x.size)+'</div>'
+            +'</div>'
+            +'<button class="tr-mini bh-del" title="Löschen">✕</button></div>';
+        }).join('')+'</div>'
+        :'<div class="empty" style="padding:18px 8px">Noch keine Berichte hochgeladen.</div>')
+      +'<input type="file" id="bh-file" accept=".doc,.docx,.pdf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple style="display:none">'
+      +'<button class="tr-addbtn" id="bh-upload" style="margin-top:10px">📝 Bericht hochladen</button>'
+      +'<div class="tr-upstatus" id="bh-status"></div></div>';
     h+='<div class="card"><div class="ttl">'+ICONS.pen+'Notizen</div><textarea id="edunotes" style="width:100%;min-height:150px;background:transparent;border:0;outline:0;color:var(--text);font:400 14px/1.55 Inter;resize:vertical" placeholder="Merkzettel für Berufsschule &amp; Betrieb …"></textarea></div>';
     h+='</div>';
     w.innerHTML=h;
@@ -1979,6 +2127,57 @@ var LifeOS=(function(){
     w.querySelector('#etadd').onclick=addTopic;
     w.querySelector('#etnew').onkeydown=function(ev){ if(ev.key==='Enter')addTopic(); };
     var nt=w.querySelector('#edunotes'); nt.value=E.notes||''; nt.oninput=function(){ E.notes=nt.value; persist(); };
+    /* --- Berichtsheft: Upload + Löschen --- */
+    var bhBtn=w.querySelector('#bh-upload'), bhInp=w.querySelector('#bh-file'), bhSt=w.querySelector('#bh-status');
+    if(bhBtn && bhInp){
+      bhBtn.onclick=function(){
+        if(!storageActive()){ bhSt.textContent='⚠️ Bitte zuerst unter Einstellungen › Geräte-Sync verbinden.'; bhSt.className='tr-upstatus err'; return; }
+        bhInp.click();
+      };
+      bhInp.onchange=async function(){
+        var files=Array.prototype.slice.call(bhInp.files||[]); if(!files.length) return;
+        E.berichte=E.berichte||[];
+        for(var k=0;k<files.length;k++){
+          var f=files[k];
+          if(f.size>15728640){ bhSt.textContent='„'+f.name+'" ist größer als 15 MB – übersprungen.'; bhSt.className='tr-upstatus err'; continue; }
+          bhSt.textContent='Lade „'+f.name+'" hoch …'; bhSt.className='tr-upstatus';
+          try{
+            var doc=await uploadDoc(f);
+            var wk=parseBerichtName(f.name);
+            E.berichte.push({id:'bh'+Date.now()+'-'+k, kw:wk.kw, jahr:wk.jahr, von:wk.von, bis:wk.bis, name:doc.name, url:doc.url, path:doc.path, size:doc.size, type:doc.type, ts:doc.ts});
+            persist();
+            bhSt.textContent='✅ „'+f.name+'" gespeichert · KW '+wk.kw+'/'+wk.jahr; bhSt.className='tr-upstatus ok';
+          }catch(e){ bhSt.textContent='Fehler: '+(e.message||'Upload fehlgeschlagen'); bhSt.className='tr-upstatus err'; }
+        }
+        bhInp.value='';
+        renderEdu();
+      };
+    }
+    w.querySelectorAll('[data-bhedit]').forEach(function(b){
+      b.onclick=function(){
+        var id=b.getAttribute('data-bhedit');
+        var x=(E.berichte||[]).filter(function(y){return y.id===id;})[0]; if(!x) return;
+        openM('Zeitraum korrigieren',
+          '<div class="note" style="margin-bottom:10px">Im Dateinamen steht kein Jahr – falls die Woche nicht stimmt, hier anpassen.</div>'
+          +'<div class="fg2"><div class="fg"><label>Von (Montag)</label><input id="bh-von" type="date" value="'+esc(x.von||'')+'"></div>'
+          +'<div class="fg"><label>Bis (Freitag)</label><input id="bh-bis" type="date" value="'+esc(x.bis||'')+'"></div></div>',
+          [{label:'Abbrechen'},{label:'Speichern',cls:'pri',fn:function(){
+            var v=document.getElementById('bh-von').value, bs=document.getElementById('bh-bis').value;
+            if(v){ var wk=isoWeek(new Date(v+'T00:00')); x.von=v; x.bis=bs; x.kw=wk.kw; x.jahr=wk.jahr; persist(); renderEdu(); }
+          }}]);
+      };
+    });
+    w.querySelectorAll('.bh-del').forEach(function(b){
+      b.onclick=function(){
+        var id=b.closest('.bh-row').getAttribute('data-bhid');
+        var x=(E.berichte||[]).filter(function(y){return y.id===id;})[0];
+        if(x && confirm('Bericht „'+x.name+'" löschen?')){
+          if(x.path) deleteDoc(x.path);
+          E.berichte=(E.berichte||[]).filter(function(y){return y.id!==id;});
+          persist(); renderEdu();
+        }
+      };
+    });
   }
 
   /* -------------------------------- Gesundheit ----------------------------- */
