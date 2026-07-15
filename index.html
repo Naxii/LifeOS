@@ -221,12 +221,31 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .tr-empty{text-align:center;color:var(--text3);font-size:13.5px;padding:44px 20px;line-height:1.7}
 .tr-copied{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--teal,#8FD25C);color:#062012;font:700 13px 'Inter';padding:10px 18px;border-radius:99px;z-index:190;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;transition:opacity .2s}
 .tr-copied.on{opacity:1}
-/* Tresor-Editor-Modal nutzt die vorhandene .osmodal-Struktur */
-.tr-frow{display:flex;gap:8px;margin-bottom:8px}
-.tr-frow input{flex:1}
-.tr-frow .tr-mini{width:38px;height:auto}
-.tr-uprow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
-.tr-upstatus{font-size:12px;color:var(--text3)}
+/* ---- Tresor-Editor (Modal) ---- */
+.tr-sec{margin-bottom:16px}
+.tr-sec-h{font:600 12px 'Inter';color:var(--text2);margin-bottom:8px}
+.tr-sec-note{font-size:11.5px;color:var(--text3);margin:-2px 0 9px;line-height:1.45}
+/* Ein Feld = eigene Karte mit Luft */
+.tr-frow{background:color-mix(in srgb,var(--surface,#161F17) 55%,transparent);
+  border:0.5px solid var(--border,rgba(255,255,255,.09));border-radius:14px;padding:11px 11px 12px;margin-bottom:9px}
+.tr-frow-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.tr-fnum{font:600 10.5px 'Inter';letter-spacing:.5px;text-transform:uppercase;color:var(--text3)}
+.tr-frow input{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:11px;
+  border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1F2640);color:var(--text);
+  font:500 14px 'Inter';outline:none;-webkit-appearance:none;appearance:none}
+.tr-frow input:focus{border-color:var(--teal,#8FD25C)}
+.tr-frow .tr-flabel{margin-bottom:8px;font-size:13px}
+.tr-fval-row{display:flex;gap:8px;align-items:stretch}
+.tr-fval-row .tr-fvalue{flex:1;min-width:0;font-family:'Space Grotesk';font-weight:600;letter-spacing:.3px}
+.tr-fx{flex-shrink:0;width:42px;border-radius:11px;border:0.5px solid var(--border,rgba(255,255,255,.12));
+  background:color-mix(in srgb,var(--surface,#161F17) 70%,transparent);color:var(--text2);cursor:pointer;
+  display:grid;place-items:center;font-size:15px}
+.tr-fx:active{transform:scale(.94)}
+.tr-frow-head .tr-fx{width:28px;height:28px;font-size:12px;border-radius:8px}
+.tr-addbtn{width:100%;padding:11px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--text,#fff) 22%,transparent);
+  background:none;color:var(--text2);font:600 13px 'Inter';cursor:pointer;margin-top:2px}
+.tr-addbtn:active{transform:scale(.98);background:color-mix(in srgb,var(--teal,#8FD25C) 10%,transparent)}
+.tr-upstatus{font-size:12px;color:var(--text3);margin-top:8px;line-height:1.45;min-height:0}
 .tr-upstatus.ok{color:var(--teal,#8FD25C)}.tr-upstatus.err{color:var(--red,#FF7A7A)}
 .tr-doc-empty{font-size:12px;color:var(--text3);padding:6px 2px}
 .tr-doc{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--bg,#0C120D) 40%,transparent);margin-bottom:6px}
@@ -379,7 +398,9 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 /* ---------- Shell-Modal ---------- */
 #osmodal{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
 #osmodal.on{display:flex}
-#osmodal .mbox{width:100%;max-width:460px;max-height:88vh;overflow-y:auto;background:var(--surface,#161B2E);border:0.5px solid var(--border,rgba(255,255,255,.1));border-radius:26px 26px 0 0;padding:20px;animation:mup .38s cubic-bezier(.3,1.1,.4,1)}
+#osmodal .mbox{width:100%;max-width:460px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;background:var(--surface,#161B2E);border:0.5px solid var(--border,rgba(255,255,255,.1));border-radius:26px 26px 0 0;padding:20px;animation:mup .38s cubic-bezier(.3,1.1,.4,1)}
+#mbody{flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px}
+#osmodal .mhead,#osmodal .mfoot{flex-shrink:0}
 @media(min-width:640px){#osmodal{align-items:center}#osmodal .mbox{border-radius:26px;margin:20px}}
 @keyframes mup{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
 .mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
@@ -393,7 +414,7 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .fg2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start}
 .fg2>.fg{min-width:0;margin-bottom:0}
 .fg2>.fg:last-child{margin-bottom:13px}
-.mfoot{display:flex;gap:10px;margin-top:18px}
+.mfoot{display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:0.5px solid var(--border,rgba(255,255,255,.08))}
 .mbtn{flex:1;padding:13px;border-radius:15px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1F2640);color:var(--text);font:600 14px 'Inter';cursor:pointer}
 .mbtn.pri{background:linear-gradient(135deg,var(--teal,#6BA5FF),var(--blue,#4472d8));border:0;color:#fff}
 .mbtn.danger{color:var(--red,#FF7A7A)}
@@ -2427,22 +2448,27 @@ var LifeOS=(function(){
     function fieldRows(){
       return data.fields.map(function(f,i){
         return '<div class="tr-frow" data-i="'+i+'">'
-          +'<input type="text" class="tr-flabel" placeholder="Bezeichnung (z. B. E-Mail, Passwort)" value="'+esc(f.label||'')+'">'
+          +'<div class="tr-frow-head"><span class="tr-fnum">Feld '+(i+1)+'</span>'
+          +'<button class="tr-fx tr-fdel" title="Feld entfernen">✕</button></div>'
+          +'<input type="text" class="tr-flabel" placeholder="Bezeichnung – z. B. E-Mail, Passwort, Kennzeichen" value="'+esc(f.label||'')+'">'
+          +'<div class="tr-fval-row">'
           +'<input type="text" class="tr-fvalue" placeholder="Wert" value="'+esc(f.value||'')+'">'
-          +'<button class="tr-mini tr-fgen" title="Passwort generieren">🎲</button>'
-          +'<button class="tr-mini tr-fdel" title="Feld entfernen">✕</button></div>';
+          +'<button class="tr-fx tr-fgen" title="Sicheres Passwort erzeugen">🎲</button>'
+          +'</div></div>';
       }).join('');
     }
-    var body='<label class="fl">Titel</label><input type="text" id="tr-e-name" placeholder="z. B. Citroën C3 Aircross" value="'+esc(data.name||'')+'">'
-      +'<label class="fl">Kategorie</label><select id="tr-e-cat">'+catOpts+'</select>'
-      +'<label class="fl">Felder</label><div id="tr-e-fields">'+fieldRows()+'</div>'
-      +'<button class="qbtn" id="tr-e-addfield" style="margin-top:4px">+ Feld</button>'
-      +'<label class="fl" style="margin-top:12px">Notiz (optional)</label><textarea id="tr-e-note" rows="2" placeholder="Zusätzliche Infos …">'+esc(data.note||'')+'</textarea>'
-      +'<label class="fl" style="margin-top:12px">Dokumente (gescannte Verträge, PDFs, Fotos)</label>'
+    var body='<div class="fg"><label>Titel</label><input type="text" id="tr-e-name" placeholder="z. B. Citroën C3 Aircross" value="'+esc(data.name||'')+'"></div>'
+      +'<div class="fg"><label>Kategorie</label><select id="tr-e-cat">'+catOpts+'</select></div>'
+      +'<div class="tr-sec"><div class="tr-sec-h">Felder</div>'
+      +'<div id="tr-e-fields">'+fieldRows()+'</div>'
+      +'<button class="tr-addbtn" id="tr-e-addfield">+ Weiteres Feld</button></div>'
+      +'<div class="fg"><label>Notiz (optional)</label><textarea id="tr-e-note" rows="2" placeholder="Zusätzliche Infos …">'+esc(data.note||'')+'</textarea></div>'
+      +'<div class="tr-sec"><div class="tr-sec-h">Dokumente</div>'
+      +'<div class="tr-sec-note">Gescannte Verträge, PDFs oder Fotos anhängen.</div>'
       +'<div id="tr-e-docs"></div>'
-      +'<div class="tr-uprow"><input type="file" id="tr-e-file" accept="application/pdf,image/*" multiple style="display:none">'
-      +'<button class="qbtn" id="tr-e-upload">📎 Dokument hinzufügen</button>'
-      +'<span class="tr-upstatus" id="tr-e-upstatus"></span></div>';
+      +'<input type="file" id="tr-e-file" accept="application/pdf,image/*" multiple style="display:none">'
+      +'<button class="tr-addbtn" id="tr-e-upload">📎 Dokument hinzufügen</button>'
+      +'<div class="tr-upstatus" id="tr-e-upstatus"></div></div>';
     openM(isNew?'Neuer Eintrag':'Eintrag bearbeiten', body, [
       {label:'Abbrechen', cls:'ghost'},
       {label:'Speichern', cls:'prim', fn:function(){
