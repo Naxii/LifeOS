@@ -940,6 +940,15 @@ var LifeOS=(function(){
     var y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));
     return {kw:Math.ceil((((t-y0)/86400000)+1)/7), jahr:t.getUTCFullYear()};
   }
+  /* Montag einer ISO-Kalenderwoche (für Berichte ohne Datumsangabe) */
+  function isoWeekStart(y,w){
+    var d=new Date(Date.UTC(y,0,4));               /* der 4.1. liegt immer in KW 1 */
+    var dow=d.getUTCDay()||7;
+    d.setUTCDate(d.getUTCDate()-dow+1+(w-1)*7);    /* Montag der gesuchten Woche */
+    return d.toISOString().slice(0,10);
+  }
+  /* Einheitlicher Sortierschlüssel eines Berichts (immer ein ISO-Datum) */
+  function bhKey(x){ return x.von || isoWeekStart(x.jahr, x.kw); }
   /* Dateinamen von Wochenberichten deuten.
      Hauptformat (Nils): TTMM_TTMM  ->  1108_1508 = 11.08. bis 15.08.
      Das Jahr steht nicht im Namen. Da Berichte immer für bereits vergangene
@@ -2090,21 +2099,25 @@ var LifeOS=(function(){
       +E.topics.map(function(t,i){ return '<div class="tsub'+(t.done?' done':'')+'"><div class="tcheck'+(t.done?' on':'')+'" data-et="'+i+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div><span style="flex:1">'+esc(t.t)+'</span>'+delBtn('data-etd',i)+'</div>'; }).join('')
       +'<div class="tsubadd"><input id="etnew" placeholder="Lernthema hinzufügen …"><button class="cbtn" id="etadd">+</button></div></div>';
     /* --- Berichtsheft-Archiv --- */
-    var bh=(E.berichte||[]).slice().sort(function(a,b){
-      if(a.von&&b.von) return b.von.localeCompare(a.von);
-      return (b.jahr-a.jahr)||(b.kw-a.kw);
-    });
+    /* Nachweis-Nummern: chronologisch ab dem frühesten Bericht (Nr. 1).
+       Bewusst berechnet statt gespeichert – trägst du später einen älteren
+       Bericht nach, stimmt die Nummerierung automatisch wieder. */
+    var chrono=(E.berichte||[]).slice().sort(function(a,b){ return bhKey(a).localeCompare(bhKey(b)); });
+    var bhNr={}; chrono.forEach(function(x,i){ bhNr[x.id]=i+1; });
+    /* Anzeige: neuester Bericht oben */
+    var bh=chrono.slice().reverse();
     h+='<div class="card" style="grid-column:1/-1"><div class="ttl">'+ICONS.doc+'Berichtsheft</div>'
-      +'<div class="note" style="margin-bottom:10px">Lade deine Wochenberichte (Word oder PDF) hoch – sie liegen sicher in der Cloud und sind auf allen Geräten da.</div>'
+      +'<div class="note" style="margin-bottom:10px">Lade deine Wochenberichte (Word oder PDF) hoch – sie liegen sicher in der Cloud und sind auf allen Geräten da. Die Nachweis-Nummer wird automatisch ab dem frühesten Bericht vergeben.</div>'
       +(bh.length?'<div class="bh-list">'+bh.map(function(x){
           var rng='';
           if(x.von && x.bis) rng=dShort(x.von)+' – '+dShort(x.bis);
           else if(x.von) rng=dShort(x.von);
+          else rng='KW '+x.kw+' · '+x.jahr;
           return '<div class="bh-row" data-bhid="'+esc(x.id)+'">'
-            +'<button class="bh-kw" data-bhedit="'+esc(x.id)+'" title="Zeitraum korrigieren">KW '+x.kw+'<small>'+x.jahr+'</small></button>'
+            +'<button class="bh-kw" data-bhedit="'+esc(x.id)+'" title="Zeitraum korrigieren">Nr. '+bhNr[x.id]+'<small>KW '+x.kw+'</small></button>'
             +'<div class="bh-info">'
             +'<a class="bh-name" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+docIcon(x.type,x.name)+' '+esc(x.name)+'</a>'
-            +'<div class="bh-range">'+(rng?esc(rng)+' · ':'')+fmtSize(x.size)+'</div>'
+            +'<div class="bh-range">'+esc(rng)+' · '+fmtSize(x.size)+'</div>'
             +'</div>'
             +'<button class="tr-mini bh-del" title="Löschen">✕</button></div>';
         }).join('')+'</div>'
