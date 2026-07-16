@@ -200,6 +200,13 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .wx-empty .bico{font-size:44px;margin-bottom:12px}
 .wx-reload{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:10px 16px;border-radius:13px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1E2A1F);color:var(--text);font:600 13px 'Inter';cursor:pointer}
 @media(max-width:520px){.wx-metrics{grid-template-columns:repeat(2,1fr)}}
+/* Scrollbare Einkaufsliste – wächst mit, bleibt aber handlich */
+.shop-scroll{max-height:clamp(150px,32vh,300px);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  margin:0 -4px;padding:0 4px;overscroll-behavior:contain}
+.shop-scroll.mod{max-height:clamp(200px,46vh,520px)}
+.shop-scroll::-webkit-scrollbar{width:5px}
+.shop-scroll::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text,#fff) 18%,transparent);border-radius:99px}
+.shop-scroll::-webkit-scrollbar-track{background:transparent}
 .shop-add{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border,rgba(255,255,255,.07))}
 .shop-add input{flex:1;min-width:0;box-sizing:border-box;padding:9px 11px;border-radius:11px;
   border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1F2640);color:var(--text);
@@ -883,7 +890,7 @@ var LifeOS=(function(){
      Trage hier die zwei Werte aus deinem Supabase-Projekt ein
      (Project Settings -> API). Solange sie leer sind, ist der Sync deaktiviert
      und LifeOS speichert nur lokal wie bisher. */
-  var BUILD_VERSION='16.07.2026 10:30';
+  var BUILD_VERSION='16.07.2026 10:36';
   var SUPABASE_URL='https://avsamgrtvnkxgvdwzktd.supabase.co';       /* z. B. https://xxxx.supabase.co */
   var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2c2FtZ3J0dm5reGd2ZHd6a3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5MjgzMzUsImV4cCI6MjA5OTUwNDMzNX0.tRkFcxJ3I0696c0YKSAVkViF6R8PjiCyXTUYAHGvQKM';  /* der öffentliche "anon"-Key */
   /* ====================================================================== */
@@ -1450,13 +1457,13 @@ var LifeOS=(function(){
         /* offene zuerst, erledigte danach; im Widget höchstens 6 Zeilen */
         var order=sh.map(function(x,i){ return {x:x,i:i}; })
                     .sort(function(a,b){ return (a.x.done?1:0)-(b.x.done?1:0); });
-        body=order.slice(0,6).map(function(o){
+        /* Alle Artikel anzeigen – die Liste scrollt, statt gekappt zu werden */
+        body='<div class="shop-scroll">'+order.map(function(o){
           return '<div class="tsub'+(o.x.done?' done':'')+'">'
             +'<div class="tcheck'+(o.x.done?' on':'')+'" data-dsh="'+o.i+'">'
             +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>'
             +'<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(o.x.t)+'</span></div>';
-        }).join('');
-        if(order.length>6) body+='<div class="note" style="margin-top:6px">+ '+(order.length-6)+' weitere · im Modul „Zuhause"</div>';
+        }).join('')+'</div>';
       }
       W.einkauf='<div class="card" id="dash-shop-card"><div class="ttl">'+ICONS.home+'Einkaufsliste'+(offen.length?' · '+offen.length+' offen':'')+'</div>'
         +body
@@ -2359,7 +2366,7 @@ var LifeOS=(function(){
     /* Einkaufsliste */
     var openS=Ho.shop.filter(function(x){return !x.done}).length;
     h+='<div class="card"><div class="ttl">'+ICONS.home+'Einkaufsliste'+(openS?' · '+openS+' offen':'')+'</div>'
-      +(Ho.shop.length?Ho.shop.map(function(x,i){ return '<div class="tsub'+(x.done?' done':'')+'"><div class="tcheck'+(x.done?' on':'')+'" data-zs="'+i+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div><span style="flex:1">'+esc(x.t)+'</span>'+delBtn('data-zsd',i)+'</div>'; }).join(''):'<div class="empty">Liste ist leer.</div>')
+      +(Ho.shop.length?'<div class="shop-scroll mod">'+Ho.shop.map(function(x,i){ return '<div class="tsub'+(x.done?' done':'')+'"><div class="tcheck'+(x.done?' on':'')+'" data-zs="'+i+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(x.t)+'</span>'+delBtn('data-zsd',i)+'</div>'; }).join('')+'</div>':'<div class="empty">Liste ist leer.</div>')
       +'<div class="tsubadd"><input id="zsnew" placeholder="Artikel hinzufügen …"><button class="cbtn" id="zsadd">+</button></div>'
       +(Ho.shop.some(function(x){return x.done})?'<div class="note" style="cursor:pointer" id="zsclear">Erledigte entfernen</div>':'')+'</div>';
     /* Haushaltsaufgaben */
