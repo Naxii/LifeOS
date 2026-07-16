@@ -200,6 +200,12 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .wx-empty .bico{font-size:44px;margin-bottom:12px}
 .wx-reload{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:10px 16px;border-radius:13px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1E2A1F);color:var(--text);font:600 13px 'Inter';cursor:pointer}
 @media(max-width:520px){.wx-metrics{grid-template-columns:repeat(2,1fr)}}
+.shop-add{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border,rgba(255,255,255,.07))}
+.shop-add input{flex:1;min-width:0;box-sizing:border-box;padding:9px 11px;border-radius:11px;
+  border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1F2640);color:var(--text);
+  font:500 13px 'Inter';outline:none;-webkit-appearance:none;appearance:none}
+.shop-add input:focus{border-color:var(--teal,#8FD25C)}
+#dash-shop-card .tsub{cursor:default}
 /* ---------- Berichtsheft ---------- */
 .bh-list{display:flex;flex-direction:column;gap:6px}
 .bh-row{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:12px;
@@ -877,7 +883,7 @@ var LifeOS=(function(){
      Trage hier die zwei Werte aus deinem Supabase-Projekt ein
      (Project Settings -> API). Solange sie leer sind, ist der Sync deaktiviert
      und LifeOS speichert nur lokal wie bisher. */
-  var BUILD_VERSION='16.07.2026 10:18';
+  var BUILD_VERSION='16.07.2026 10:30';
   var SUPABASE_URL='https://avsamgrtvnkxgvdwzktd.supabase.co';       /* z. B. https://xxxx.supabase.co */
   var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2c2FtZ3J0dm5reGd2ZHd6a3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5MjgzMzUsImV4cCI6MjA5OTUwNDMzNX0.tRkFcxJ3I0696c0YKSAVkViF6R8PjiCyXTUYAHGvQKM';  /* der öffentliche "anon"-Key */
   /* ====================================================================== */
@@ -1433,6 +1439,32 @@ var LifeOS=(function(){
       +'<div class="wdrops">'+Array.from({length:wGoal}).map(function(_,i){return '<div class="wdrop'+(i<wToday?' on':'')+'"></div>'}).join('')+'</div></div>';
     /* Notizen */
     W.notes='<div class="card"><div class="ttl">'+ICONS.pen+'Schnellnotizen</div><textarea id="notes" placeholder="Gedanken, Einkäufe, Ideen …"></textarea></div>';
+    /* Einkaufsliste – dieselbe Liste wie im Modul „Zuhause" */
+    (function(){
+      var sh=((master.lifeos.mods||{}).home||{}).shop||[];
+      var offen=sh.filter(function(x){return !x.done;});
+      var body;
+      if(!sh.length){
+        body='<div class="empty" style="padding:6px 0">Liste ist leer – unten etwas hinzufügen.</div>';
+      } else {
+        /* offene zuerst, erledigte danach; im Widget höchstens 6 Zeilen */
+        var order=sh.map(function(x,i){ return {x:x,i:i}; })
+                    .sort(function(a,b){ return (a.x.done?1:0)-(b.x.done?1:0); });
+        body=order.slice(0,6).map(function(o){
+          return '<div class="tsub'+(o.x.done?' done':'')+'">'
+            +'<div class="tcheck'+(o.x.done?' on':'')+'" data-dsh="'+o.i+'">'
+            +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>'
+            +'<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(o.x.t)+'</span></div>';
+        }).join('');
+        if(order.length>6) body+='<div class="note" style="margin-top:6px">+ '+(order.length-6)+' weitere · im Modul „Zuhause"</div>';
+      }
+      W.einkauf='<div class="card" id="dash-shop-card"><div class="ttl">'+ICONS.home+'Einkaufsliste'+(offen.length?' · '+offen.length+' offen':'')+'</div>'
+        +body
+        +'<div class="shop-add"><input id="dsh-new" type="text" placeholder="Artikel hinzufügen …" autocomplete="off">'
+        +'<button class="cbtn" id="dsh-add" aria-label="Hinzufügen">+</button></div>'
+        +'</div>';
+    })();
+
     /* Formel 1 – nächstes Rennen */
     (function(){
       var ni=(typeof f1NextIdx==='function')?f1NextIdx():-1;
@@ -1446,8 +1478,8 @@ var LifeOS=(function(){
     })();
 
     /* --- Reihenfolge & Sichtbarkeit (vom Nutzer anpassbar) --- */
-    var DASH_DEF=['remind','fin','frei','f1','goals','fzg','termine','heute','quick','wasser','notes'];
-    var NAMES={remind:'Erinnerungen',fin:'Finanzen',frei:'Frei Konto',f1:'Formel 1',goals:'Sparziele',fzg:'Fahrzeug',termine:'Nächste Termine',heute:'Heute fällig',quick:'Schnellzugriff',wasser:'Wasser',notes:'Schnellnotizen'};
+    var DASH_DEF=['remind','fin','frei','f1','goals','fzg','termine','heute','einkauf','quick','wasser','notes'];
+    var NAMES={remind:'Erinnerungen',fin:'Finanzen',frei:'Frei Konto',f1:'Formel 1',goals:'Sparziele',fzg:'Fahrzeug',termine:'Nächste Termine',heute:'Heute fällig',einkauf:'Einkaufsliste',quick:'Schnellzugriff',wasser:'Wasser',notes:'Schnellnotizen'};
     var dc=master.lifeos.dash;
     if(!dc||!Array.isArray(dc.order)){ dc={order:DASH_DEF.slice(),hidden:['f1']}; master.lifeos.dash=dc; }
     DASH_DEF.forEach(function(id){ if(dc.order.indexOf(id)<0) dc.order.push(id); });
@@ -1485,6 +1517,31 @@ var LifeOS=(function(){
       grid.querySelectorAll('[data-act]').forEach(function(el){ el.onclick=function(){ el.getAttribute('data-act')==='event'?eventModal(null,null):taskModal(null); }; });
       grid.querySelectorAll('[data-dtc]').forEach(function(el){ el.onclick=function(ev){ ev.stopPropagation(); toggleTask(+el.getAttribute('data-dtc')); }; });
       grid.querySelectorAll('[data-dw]').forEach(function(el){ el.onclick=function(){ var Hx=master.lifeos.mods.health; Hx.water[todayStr()]=(Hx.water[todayStr()]||0)+1; persist(); renderDash(); }; });
+      /* Einkaufsliste im Dashboard – schreibt in dieselbe Liste wie das Modul „Zuhause" */
+      grid.querySelectorAll('[data-dsh]').forEach(function(el){
+        el.onclick=function(ev){
+          ev.stopPropagation();
+          var Ho=master.lifeos.mods.home, i=+el.getAttribute('data-dsh');
+          if(!Ho.shop[i]) return;
+          Ho.shop[i].done = Ho.shop[i].done?false:true;
+          persist();
+          /* kurzes Feedback, dann neu aufbauen (Erledigte rutschen nach unten) */
+          var row=el.closest('.tsub'); if(row){ el.classList.toggle('on'); row.classList.toggle('done'); }
+          setTimeout(renderDash, 260);
+        };
+      });
+      var shIn=document.getElementById('dsh-new'), shBtn=document.getElementById('dsh-add');
+      if(shIn && shBtn){
+        var addShopDash=function(){
+          var v=shIn.value.trim(); if(!v) return;
+          var Ho=master.lifeos.mods.home; Ho.shop=Ho.shop||[];
+          Ho.shop.push({t:v,done:false}); persist(); renderDash();
+          var again=document.getElementById('dsh-new'); if(again) again.focus();
+        };
+        shBtn.onclick=function(ev){ ev.stopPropagation(); addShopDash(); };
+        shIn.onclick=function(ev){ ev.stopPropagation(); };
+        shIn.onkeydown=function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); addShopDash(); } };
+      }
       var n=document.getElementById('notes');
       if(n){ n.value=master.lifeos.notes||''; n.oninput=function(){ master.lifeos.notes=n.value; persist(); }; }
     } else {
