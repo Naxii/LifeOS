@@ -909,6 +909,47 @@ var LifeOS=(function(){
   function syncActive(){ return !!(SUPABASE_URL && SUPABASE_ANON_KEY); }
   function sbHeaders(){ return {'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'}; }
 
+  /* ---- Links zuverlässig öffnen, auch als iOS-Home-Bildschirm-App ----
+     Problem: Im Standalone-Modus ignoriert iOS <a target="_blank"> komplett –
+     es passiert schlicht nichts. Deshalb hier eine Kaskade aus mehreren Wegen. */
+  function isStandalone(){
+    try{
+      if(window.navigator.standalone===true) return true;                       /* iOS */
+      if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    }catch(e){}
+    return false;
+  }
+  function openLink(url, name){
+    if(!url) return;
+    if(!isStandalone()){ window.open(url,'_blank','noopener'); return; }
+    /* 1) window.open – öffnet auf neueren iOS-Versionen Safari */
+    var w=null;
+    try{ w=window.open(url,'_blank'); }catch(e){}
+    if(w){ try{ w.opener=null; }catch(e){} return; }
+    /* 2) Teilen-Dialog – dort lässt sich „In Safari öffnen" wählen */
+    if(navigator.share){
+      navigator.share({title:name||'Datei', url:url}).catch(function(){ fallbackCopy(url); });
+      return;
+    }
+    /* 3) Notnagel: Link kopieren */
+    fallbackCopy(url);
+  }
+  function fallbackCopy(url){
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url);
+      else { var ta=document.createElement('textarea'); ta.value=url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+      trToast('Link kopiert – in Safari einfügen');
+    }catch(e){ trToast('Öffnen nicht möglich'); }
+  }
+  /* Alle Datei-/Außenlinks abfangen (greift für Berichtsheft, Tresor, Dokumente, News) */
+  document.addEventListener('click', function(ev){
+    var a=ev.target.closest && ev.target.closest('a[data-ext]');
+    if(!a) return;
+    if(!isStandalone()) return;              /* am PC funktioniert der normale Link */
+    ev.preventDefault();
+    openLink(a.getAttribute('href'), a.textContent.trim());
+  }, true);
+
   /* ===================== Supabase Storage (Dokumente) =====================
      Bucket 'tresor' (öffentlich lesbar per Link). Upload via REST.
      Dateien werden unter <syncCode>/<zufalls-id>.<ext> abgelegt, damit sie
@@ -2123,7 +2164,7 @@ var LifeOS=(function(){
           return '<div class="bh-row" data-bhid="'+esc(x.id)+'">'
             +'<button class="bh-kw" data-bhedit="'+esc(x.id)+'" title="Zeitraum korrigieren">Nr. '+bhNr[x.id]+'<small>KW '+x.kw+'</small></button>'
             +'<div class="bh-info">'
-            +'<a class="bh-name" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+docIcon(x.type,x.name)+' '+esc(x.name)+'</a>'
+            +'<a class="bh-name" data-ext href="'+esc(x.url)+'" target="_blank" rel="noopener">'+docIcon(x.type,x.name)+' '+esc(x.name)+'</a>'
             +'<div class="bh-range">'+esc(rng)+' · '+fmtSize(x.size)+'</div>'
             +'</div>'
             +'<button class="tr-mini bh-del" title="Löschen">✕</button></div>';
@@ -2383,7 +2424,7 @@ var LifeOS=(function(){
       var list=D.filter(function(d){return d.cat===c});
       if(!list.length) return;
       h+='<div class="card" style="margin-bottom:14px"><div class="ttl">'+ICONS.doc+c+'</div>'
-        +list.map(function(d){ return '<div class="kv"><span class="k">'+esc(d.title)+(d.note?' <span style="color:var(--text3)">· '+esc(d.note)+'</span>':'')+'</span><span class="v" style="display:flex;gap:8px;align-items:center;font-weight:500;color:var(--text2)">'+(d.date?dShort(d.date):'')+(d.link?' <a href="'+esc(d.link)+'" target="_blank" rel="noopener" style="color:var(--teal)">Öffnen</a>':'')+delBtn('data-dd',d.id)+'</span></div>'; }).join('')+'</div>';
+        +list.map(function(d){ return '<div class="kv"><span class="k">'+esc(d.title)+(d.note?' <span style="color:var(--text3)">· '+esc(d.note)+'</span>':'')+'</span><span class="v" style="display:flex;gap:8px;align-items:center;font-weight:500;color:var(--text2)">'+(d.date?dShort(d.date):'')+(d.link?' <a data-ext href="'+esc(d.link)+'" target="_blank" rel="noopener" style="color:var(--teal)">Öffnen</a>':'')+delBtn('data-dd',d.id)+'</span></div>'; }).join('')+'</div>';
     });
     h+='<div class="note" style="max-width:640px">Hinweis: Datei-Uploads (PDFs) sind in dieser Umgebung nicht dauerhaft speicherbar – nutze das Feld „Ablage/Link“, um auf den Speicherort zu verweisen (z. B. Ordner, Cloud-Link).</div>';
     w.innerHTML=h;
@@ -2603,7 +2644,7 @@ var LifeOS=(function(){
         +'</span></div>';
     }).join('');
     var docs=(it.docs||[]).map(function(d){
-      return '<a class="tr-doc-chip" href="'+esc(d.url)+'" target="_blank" rel="noopener">'+docIcon(d.type,d.name)+' '+esc(d.name)+'</a>';
+      return '<a class="tr-doc-chip" data-ext href="'+esc(d.url)+'" target="_blank" rel="noopener">'+docIcon(d.type,d.name)+' '+esc(d.name)+'</a>';
     }).join('');
     return '<div class="tr-card" data-id="'+esc(it.id)+'">'
       +'<div class="tr-card-top"><div class="tr-card-name">'+esc(it.name||'Ohne Titel')+'</div>'
@@ -2807,7 +2848,7 @@ var LifeOS=(function(){
     if(!items.length){ list.innerHTML='<div class="news-empty">Keine Meldungen vorhanden.</div>'; return; }
     list.innerHTML=items.slice(0,40).map(function(it){
       var isF1=(it.cat==='f1');
-      return '<a class="news-item" href="'+esc(it.link)+'" target="_blank" rel="noopener">'
+      return '<a class="news-item" data-ext href="'+esc(it.link)+'" target="_blank" rel="noopener">'
         +'<div class="news-meta"><span class="news-src'+(isF1?' f1':'')+'">'+esc(it.src)+'</span>'
         +'<span class="news-time">'+esc(newsRelTime(it.ts))+'</span></div>'
         +'<div class="news-h">'+esc(it.title)+'</div></a>';
