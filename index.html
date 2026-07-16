@@ -200,13 +200,34 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 .wx-empty .bico{font-size:44px;margin-bottom:12px}
 .wx-reload{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:10px 16px;border-radius:13px;border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1E2A1F);color:var(--text);font:600 13px 'Inter';cursor:pointer}
 @media(max-width:520px){.wx-metrics{grid-template-columns:repeat(2,1fr)}}
+/* ---------- Einkauf: große Ansicht ---------- */
+#shopwrap{max-width:var(--w-read);margin-inline:auto}
+.shop-big-add{display:flex;gap:9px;margin-bottom:16px}
+.shop-big-add input{flex:1;min-width:0;box-sizing:border-box;padding:14px 15px;border-radius:14px;
+  border:0.5px solid var(--border,rgba(255,255,255,.12));background:var(--surf2,#1F2640);color:var(--text);
+  font:500 15px 'Inter';outline:none;-webkit-appearance:none;appearance:none}
+.shop-big-add input:focus{border-color:var(--teal,#8FD25C)}
+.shop-big-add button{flex-shrink:0;padding:0 18px;border-radius:14px;border:0;background:var(--teal,#8FD25C);
+  color:#062012;font:700 14px 'Inter';cursor:pointer}
+.shop-big-add button:active{transform:scale(.96)}
+.shop-count{font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text3);margin:0 2px 9px}
+.shop-big{display:flex;flex-direction:column;gap:7px}
+.shop-item{display:flex;align-items:center;gap:13px;padding:14px 15px;border-radius:15px;
+  background:color-mix(in srgb,var(--surface,#161F17) 75%,transparent);
+  border:0.5px solid var(--border,rgba(255,255,255,.07));transition:opacity .2s}
+.shop-item .shop-t{flex:1;min-width:0;font-size:15.5px;font-weight:500;word-break:break-word}
+.shop-item.done{opacity:.45}
+.shop-item.done .shop-t{text-decoration:line-through}
+/* ---------- Einkauf Ende ---------- */
 /* Scrollbare Einkaufsliste – wächst mit, bleibt aber handlich */
-.shop-scroll{max-height:clamp(150px,32vh,300px);overflow-y:auto;-webkit-overflow-scrolling:touch;
+.shop-scroll{max-height:106px;overflow-y:auto;-webkit-overflow-scrolling:touch;
   margin:0 -4px;padding:0 4px;overscroll-behavior:contain}
 .shop-scroll.mod{max-height:clamp(200px,46vh,520px)}
 .shop-scroll::-webkit-scrollbar{width:5px}
 .shop-scroll::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text,#fff) 18%,transparent);border-radius:99px}
 .shop-scroll::-webkit-scrollbar-track{background:transparent}
+.ttl-go{margin-left:auto;cursor:pointer;opacity:.5;font-size:17px;font-weight:600;padding:0 2px;line-height:1}
+.ttl-go:active{opacity:1}
 .shop-add{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border,rgba(255,255,255,.07))}
 .shop-add input{flex:1;min-width:0;box-sizing:border-box;padding:9px 11px;border-radius:11px;
   border:0.5px solid var(--border,rgba(255,255,255,.1));background:var(--surf2,#1F2640);color:var(--text);
@@ -766,6 +787,9 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
     <section class="view" id="view-tresor">
       <div id="tresorwrap"></div>
     </section>
+    <section class="view" id="view-einkauf">
+      <div id="shopwrap"></div>
+    </section>
     <!-- Weitere Module -->
     <section class="view" id="view-module">
       <div class="h1">Weitere Module</div>
@@ -882,7 +906,8 @@ var ICONS={
   weather:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3.2"/><path d="M8 1.5v1.5M8 15v1.5M1.5 9H3M13 9h1.5M3.6 4.6l1 1M11.4 4.6l-1 1"/><path d="M12.5 15a4 4 0 0 1 .3-8 5 5 0 0 1 9.2 2.5 3.5 3.5 0 0 1-.5 6.9H12.5z"/></svg>',
   f1:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h6l2-2h5l3 2M3 13v3h2a2 2 0 0 0 4 0h6a2 2 0 0 0 4 0h1v-3M3 13l1.5-3.5A2 2 0 0 1 6.3 8H12"/><circle cx="7" cy="16" r="1.5"/><circle cx="17" cy="16" r="1.5"/></svg>',
   news:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5z"/><path d="M17 8h3v10a2 2 0 0 1-2 2"/><path d="M7 8h7M7 11h7M7 14h4"/></svg>',
-  vault:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="13" cy="12" r="3.2"/><path d="M13 8.8v.8M13 15.6v-.8M9.8 12h.8M15.6 12h-.8M6.5 19.5v1M17.5 19.5v1"/></svg>'
+  vault:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="13" cy="12" r="3.2"/><path d="M13 8.8v.8M13 15.6v-.8M9.8 12h.8M15.6 12h-.8M6.5 19.5v1M17.5 19.5v1"/></svg>',
+  cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 3.5h2.2l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2l1.6-6.6H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="17.5" cy="20" r="1.4"/></svg>'
 };
 
 var LifeOS=(function(){
@@ -890,7 +915,7 @@ var LifeOS=(function(){
      Trage hier die zwei Werte aus deinem Supabase-Projekt ein
      (Project Settings -> API). Solange sie leer sind, ist der Sync deaktiviert
      und LifeOS speichert nur lokal wie bisher. */
-  var BUILD_VERSION='16.07.2026 10:36';
+  var BUILD_VERSION='16.07.2026 10:42';
   var SUPABASE_URL='https://avsamgrtvnkxgvdwzktd.supabase.co';       /* z. B. https://xxxx.supabase.co */
   var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2c2FtZ3J0dm5reGd2ZHd6a3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5MjgzMzUsImV4cCI6MjA5OTUwNDMzNX0.tRkFcxJ3I0696c0YKSAVkViF6R8PjiCyXTUYAHGvQKM';  /* der öffentliche "anon"-Key */
   /* ====================================================================== */
@@ -1211,6 +1236,7 @@ var LifeOS=(function(){
     {id:'sprit',n:'Fahrzeuge',ic:'car',d:1},
     {id:'kalender',n:'Kalender',ic:'cal',d:1},
     {id:'aufgaben',n:'Aufgaben',ic:'task',d:0},
+    {id:'einkauf',n:'Einkauf',ic:'cart',d:0},
     {id:'edu',n:'Ausbildung',ic:'grad',d:0},
     {id:'wetter',n:'Wetter',ic:'weather',d:0},
     {id:'f1',n:'Formel 1',ic:'f1',d:0},
@@ -1242,6 +1268,7 @@ var LifeOS=(function(){
     if(id==='settings'){ if(typeof updateSyncBadge==='function') updateSyncBadge(); startSyncTicker(); } else stopSyncTicker();
     if(id==='sprit'&&fzgTab==='wart') renderWart();
     if(id==='edu') renderEdu();
+    if(id==='einkauf') renderShop();
     if(id==='health') renderHealth();
     if(id==='home') renderHome();
     if(id==='pets') renderPets();
@@ -1465,7 +1492,8 @@ var LifeOS=(function(){
             +'<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(o.x.t)+'</span></div>';
         }).join('')+'</div>';
       }
-      W.einkauf='<div class="card" id="dash-shop-card"><div class="ttl">'+ICONS.home+'Einkaufsliste'+(offen.length?' · '+offen.length+' offen':'')+'</div>'
+      W.einkauf='<div class="card" id="dash-shop-card"><div class="ttl">'+ICONS.cart+'Einkaufsliste'+(offen.length?' · '+offen.length+' offen':'')
+        +'<span class="ttl-go" data-go="einkauf" title="Große Liste öffnen">›</span></div>'
         +body
         +'<div class="shop-add"><input id="dsh-new" type="text" placeholder="Artikel hinzufügen …" autocomplete="off">'
         +'<button class="cbtn" id="dsh-add" aria-label="Hinzufügen">+</button></div>'
@@ -2665,6 +2693,58 @@ var LifeOS=(function(){
     var h=Math.floor(m/60); if(h<24) return 'vor '+h+' Std.';
     var d=Math.floor(h/24); return 'vor '+d+' Tg.';
   }
+  /* ------------------------------ Einkaufsliste ---------------------------- */
+  function renderShop(){
+    var w=document.getElementById('shopwrap'); if(!w) return;
+    var Ho=master.lifeos.mods.home; Ho.shop=Ho.shop||[];
+    var offen=Ho.shop.filter(function(x){return !x.done;}).length;
+    var fertig=Ho.shop.length-offen;
+    var h='<div class="calbar"><div class="mon">Einkauf</div><div class="nspacer" style="flex:1"></div>'
+      +(fertig?'<button class="qbtn" id="sh-clear">'+fertig+' Erledigte entfernen</button>':'')+'</div>';
+    /* Eingabe oben – auf dem Handy sofort erreichbar */
+    h+='<div class="shop-big-add"><input id="sh-new" type="text" placeholder="Was brauchst du?" autocomplete="off">'
+      +'<button id="sh-add">Hinzufügen</button></div>';
+    if(!Ho.shop.length){
+      h+='<div class="empty" style="padding:44px 20px;text-align:center">Die Liste ist leer.<br>Tippe oben ein, was du brauchst.</div>';
+    } else {
+      var order=Ho.shop.map(function(x,i){ return {x:x,i:i}; })
+                       .sort(function(a,b){ return (a.x.done?1:0)-(b.x.done?1:0); });
+      h+='<div class="shop-count">'+offen+' offen'+(fertig?' · '+fertig+' erledigt':'')+'</div>';
+      h+='<div class="shop-big">'+order.map(function(o){
+        return '<div class="shop-item'+(o.x.done?' done':'')+'">'
+          +'<div class="tcheck'+(o.x.done?' on':'')+'" data-shc="'+o.i+'">'
+          +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>'
+          +'<span class="shop-t">'+esc(o.x.t)+'</span>'
+          +'<button class="tr-mini" data-shd="'+o.i+'" title="Entfernen">✕</button></div>';
+      }).join('')+'</div>';
+    }
+    w.innerHTML=h;
+    /* Abhaken */
+    w.querySelectorAll('[data-shc]').forEach(function(el){
+      el.onclick=function(){
+        var i=+el.getAttribute('data-shc'); if(!Ho.shop[i]) return;
+        Ho.shop[i].done=Ho.shop[i].done?false:true; persist();
+        var row=el.closest('.shop-item'); if(row){ el.classList.toggle('on'); row.classList.toggle('done'); }
+        setTimeout(function(){ renderShop(); renderDash(); },260);
+      };
+    });
+    /* Entfernen */
+    w.querySelectorAll('[data-shd]').forEach(function(el){
+      el.onclick=function(){ Ho.shop.splice(+el.getAttribute('data-shd'),1); persist(); renderShop(); renderDash(); };
+    });
+    /* Hinzufügen */
+    var inp=document.getElementById('sh-new'), add=document.getElementById('sh-add');
+    function addIt(){
+      var v=inp.value.trim(); if(!v) return;
+      Ho.shop.push({t:v,done:false}); persist(); renderShop(); renderDash();
+      var again=document.getElementById('sh-new'); if(again) again.focus();
+    }
+    if(add) add.onclick=addIt;
+    if(inp) inp.onkeydown=function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); addIt(); } };
+    var cl=document.getElementById('sh-clear');
+    if(cl) cl.onclick=function(){ Ho.shop=Ho.shop.filter(function(x){return !x.done;}); persist(); renderShop(); renderDash(); };
+  }
+
   /* ------------------------------ Doku-Tresor ------------------------------ */
   var TR_CATS=[
     {id:'passwoerter',n:'Passwörter',ic:'🔐'},
