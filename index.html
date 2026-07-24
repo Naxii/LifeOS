@@ -253,6 +253,19 @@ body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:0;
 /* ---------- Doku-Tresor ---------- */
 #tresorwrap{max-width:var(--w-read);margin-inline:auto}
 #sparplanwrap{max-width:var(--w-read);margin-inline:auto}
+/* Sparplan: Herkunfts-Hinweis + automatisch übernommene Listen */
+.sp-src{font-size:11.5px;color:var(--text3);margin-top:-2px}
+.sp-srclink{color:var(--teal,#8FD25C);cursor:pointer;font-weight:600}
+.sp-srclink:active{opacity:.6}
+.sp-list{display:flex;flex-direction:column;gap:2px}
+.sp-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;
+  background:color-mix(in srgb,var(--bg,#0C120D) 40%,transparent)}
+.sp-item+.sp-item{margin-top:3px}
+.sp-item-n{flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-item-c{font-size:10.5px;color:var(--text3)}
+.sp-item-v{flex-shrink:0;font-family:'Space Grotesk';font-weight:600;font-size:13.5px}
+.sp-item-v.inc{color:var(--teal,#8FD25C)}
+.sp-item-v.exp{color:var(--red,#FF7A7A)}
 .tr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap}
 .tr-title{font-family:'Space Grotesk';font-weight:700;font-size:clamp(20px,5vw,26px);display:flex;align-items:center;gap:10px}
 .tr-sub{font-size:12.5px;color:var(--text3);margin-bottom:16px;line-height:1.5}
@@ -2798,14 +2811,29 @@ var LifeOS=(function(){
     var monthlyLiters = cons!=null ? monthlyKm*cons/100 : null;
     var monthlyFuel = (monthlyLiters!=null && price!=null) ? monthlyLiters*price : null;
 
-    var fixedSum=(SP.fixed||[]).reduce(function(s,f){return s+(+f.amount||0);},0);
-    var income=+SP.income||0;
+    /* ---- Einnahmen & Fixkosten aus der Finanz-App ziehen ----
+       Die App speichert wiederkehrende Einnahmen unter fib2_einnahmen und
+       Fixkosten unter fib2_fixkosten (Beträge dort negativ). */
+    var finEin=J('fib2_einnahmen','finanz',[])||[];
+    var finFix=J('fib2_fixkosten','finanz',[])||[];
+    var finIncome=finEin.reduce(function(s,e){ return s+Math.abs(+e.amount||0); },0);
+    var finFixedSum=finFix.reduce(function(s,f){ return s+Math.abs(+f.amount||0); },0);
+    var hasFinData=(finEin.length>0 || finFix.length>0);
+    /* Automatisch übernehmen, sofern Daten da sind und nicht manuell übersteuert */
+    var useFin = hasFinData && SP.manual!==true;
+
+    var fixedSum = useFin ? finFixedSum : (SP.fixed||[]).reduce(function(s,f){return s+(+f.amount||0);},0);
+    var income   = useFin ? finIncome   : (+SP.income||0);
     var afterFixed=income-fixedSum;
     var afterCommute = monthlyFuel!=null ? afterFixed-monthlyFuel : null;
     var rate = (income>0 && afterCommute!=null) ? (afterCommute/income*100) : null;
+    /* Doppelzählung erkennen: enthalten die Fixkosten bereits einen Sprit-/Transport-Posten? */
+    var fuelInFix = useFin && finFix.some(function(f){
+      return /sprit|tank|benzin|kraftstoff|transport|fahrt/i.test(String(f.name||'')+' '+String(f.cat||''));
+    });
 
     var h='<div class="calbar"><div class="mon">Sparplan</div></div>';
-    h+='<div class="note" style="margin-bottom:16px">Verbrauch &amp; Spritpreis kommen automatisch aus deinen Tankdaten in „Fahrzeuge". Einkommen und Fixkosten trägst du hier ein.</div>';
+    h+='<div class="note" style="margin-bottom:16px">Alle Zahlen kommen automatisch aus deinen anderen Modulen: Verbrauch &amp; Spritpreis aus „Fahrzeuge", Einkommen &amp; Fixkosten aus „Finanzen".</div>';
 
     /* Fahrzeug & Verbrauch */
     h+='<div class="card" style="margin-bottom:14px">';
@@ -2842,17 +2870,54 @@ var LifeOS=(function(){
     /* Einnahmen & Fixkosten */
     h+='<div class="card" style="margin-bottom:14px">';
     h+='<div class="ttl">'+ICONS.fin+'Einnahmen &amp; Fixkosten</div>';
-    h+='<div class="fg"><label>Monatliches Netto-Einkommen</label><input id="sp-income" type="number" step="0.01" inputmode="decimal" placeholder="z. B. 950" value="'+(income||'')+'"></div>';
-    h+='<div class="tr-sec-h" style="margin-top:6px">Fixkosten</div>';
-    h+='<div id="sp-fixed-list">'+(SP.fixed||[]).map(function(f,i){
-      return '<div class="tr-frow">'
-        +'<div class="tr-frow-head"><span class="tr-fnum">Position '+(i+1)+'</span><button class="tr-fx sp-fixdel" data-i="'+i+'" title="Entfernen">✕</button></div>'
-        +'<input type="text" class="sp-fixlabel tr-flabel" data-i="'+i+'" placeholder="Bezeichnung – z. B. Miete" value="'+esc(f.label||'')+'">'
-        +'<input type="number" class="sp-fixamt" data-i="'+i+'" step="0.01" inputmode="decimal" placeholder="Betrag in €" value="'+(f.amount||'')+'" style="margin-top:8px">'
-        +'</div>';
-    }).join('')+'</div>';
-    h+='<button class="tr-addbtn" id="sp-addfixed">+ Fixkosten-Position</button>';
-    h+='<div class="kv" style="margin-top:10px;border-bottom:0"><span>Summe Fixkosten</span><b>'+fmtEUR(fixedSum)+'</b></div>';
+    if(useFin){
+      /* --- Automatisch aus der Finanz-App --- */
+      h+='<div class="sp-src">Automatisch aus „Finanzen" · <span class="sp-srclink" data-go="finanz">dort bearbeiten ›</span></div>';
+      h+='<div class="tr-sec-h" style="margin-top:12px">Wiederkehrende Einnahmen</div>';
+      if(finEin.length){
+        h+='<div class="sp-list">'+finEin.map(function(e){
+          return '<div class="sp-item"><span class="sp-item-n">'+esc(e.name||'Einnahme')+'</span>'
+            +'<span class="sp-item-v inc">+'+fmtEUR(Math.abs(+e.amount||0))+'</span></div>';
+        }).join('')+'</div>';
+      } else {
+        h+='<div class="note" style="margin-top:0">Noch keine wiederkehrenden Einnahmen in der Finanz-App hinterlegt.</div>';
+      }
+      h+='<div class="kv" style="margin-top:8px"><span>Summe Einnahmen</span><b>'+fmtEUR(finIncome)+'</b></div>';
+
+      h+='<div class="tr-sec-h" style="margin-top:16px">Fixkosten</div>';
+      if(finFix.length){
+        h+='<div class="sp-list">'+finFix.map(function(f){
+          return '<div class="sp-item"><span class="sp-item-n">'+esc(f.name||'Fixkosten')
+            +(f.cat?' <span class="sp-item-c">'+esc(f.cat)+'</span>':'')+'</span>'
+            +'<span class="sp-item-v exp">−'+fmtEUR(Math.abs(+f.amount||0))+'</span></div>';
+        }).join('')+'</div>';
+      } else {
+        h+='<div class="note" style="margin-top:0">Noch keine Fixkosten in der Finanz-App hinterlegt.</div>';
+      }
+      h+='<div class="kv" style="margin-top:8px;border-bottom:0"><span>Summe Fixkosten</span><b>'+fmtEUR(finFixedSum)+'</b></div>';
+      if(fuelInFix){
+        h+='<div class="note" style="color:var(--amb,#E8C56B)">⚠️ In deinen Fixkosten steht bereits ein Sprit-/Transport-Posten. Die Pendelkosten unten werden zusätzlich abgezogen – prüf kurz, ob sich das doppelt.</div>';
+      }
+      h+='<button class="tr-addbtn" id="sp-manual-on" style="margin-top:12px">Stattdessen eigene Werte eintragen</button>';
+    } else {
+      /* --- Manuelle Eingabe (Fallback / bewusst gewählt) --- */
+      if(hasFinData){
+        h+='<div class="sp-src">Eigene Werte · <span class="sp-srclink" id="sp-manual-off">wieder aus „Finanzen" übernehmen ›</span></div>';
+      } else {
+        h+='<div class="note" style="margin-top:0">In der Finanz-App sind noch keine wiederkehrenden Einnahmen oder Fixkosten hinterlegt. Trag sie dort ein – oder hier von Hand.</div>';
+      }
+      h+='<div class="fg" style="margin-top:12px"><label>Monatliches Netto-Einkommen</label><input id="sp-income" type="number" step="0.01" inputmode="decimal" placeholder="z. B. 950" value="'+(SP.income||'')+'"></div>';
+      h+='<div class="tr-sec-h" style="margin-top:6px">Fixkosten</div>';
+      h+='<div id="sp-fixed-list">'+(SP.fixed||[]).map(function(f,i){
+        return '<div class="tr-frow">'
+          +'<div class="tr-frow-head"><span class="tr-fnum">Position '+(i+1)+'</span><button class="tr-fx sp-fixdel" data-i="'+i+'" title="Entfernen">✕</button></div>'
+          +'<input type="text" class="sp-fixlabel tr-flabel" data-i="'+i+'" placeholder="Bezeichnung – z. B. Miete" value="'+esc(f.label||'')+'">'
+          +'<input type="number" class="sp-fixamt" data-i="'+i+'" step="0.01" inputmode="decimal" placeholder="Betrag in €" value="'+(f.amount||'')+'" style="margin-top:8px">'
+          +'</div>';
+      }).join('')+'</div>';
+      h+='<button class="tr-addbtn" id="sp-addfixed">+ Fixkosten-Position</button>';
+      h+='<div class="kv" style="margin-top:10px;border-bottom:0"><span>Summe Fixkosten</span><b>'+fmtEUR(fixedSum)+'</b></div>';
+    }
     h+='</div>';
 
     /* Ergebnis */
@@ -2863,7 +2928,7 @@ var LifeOS=(function(){
     h+='<div class="kv" style="border-bottom:0;padding-top:10px"><span style="font-weight:700">Sparpotenzial / Monat</span>'
       +'<b class="big" style="color:'+((afterCommute!=null&&afterCommute<0)?'var(--red,#FF7A7A)':'var(--teal,#8FD25C)')+'">'+(afterCommute!=null?fmtEUR(afterCommute):'–')+'</b></div>';
     if(rate!=null) h+='<div class="note">Das entspricht einer Sparquote von etwa '+rate.toFixed(0)+' % deines Einkommens.</div>';
-    if(!income && !fixedSum) h+='<div class="note">Trag oben dein Einkommen und deine Fixkosten ein, dann rechne ich dein Sparpotenzial aus.</div>';
+    if(!income && !fixedSum) h+='<div class="note">Sobald in der Finanz-App wiederkehrende Einnahmen und Fixkosten stehen, rechne ich hier automatisch dein Sparpotenzial aus.</div>';
     h+='</div>';
 
     /* Sparziel */
@@ -2910,6 +2975,15 @@ var LifeOS=(function(){
     });
     var addBtn=document.getElementById('sp-addfixed');
     if(addBtn) addBtn.onclick=function(){ SP.fixed.push({label:'',amount:0}); persist(); renderSparplan(); };
+    /* Umschalten zwischen automatischer Übernahme und eigenen Werten */
+    var mOn=document.getElementById('sp-manual-on');
+    if(mOn) mOn.onclick=function(){ SP.manual=true; persist(); renderSparplan(); };
+    var mOff=document.getElementById('sp-manual-off');
+    if(mOff) mOff.onclick=function(){ SP.manual=false; persist(); renderSparplan(); };
+    /* Direkt in die Finanz-App springen, um dort zu bearbeiten */
+    w.querySelectorAll('.sp-srclink[data-go]').forEach(function(el){
+      el.onclick=function(){ go(el.getAttribute('data-go')); };
+    });
   }
 
   /* ------------------------------ Doku-Tresor ------------------------------ */
